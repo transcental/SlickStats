@@ -4,10 +4,14 @@ from utils.db import update_user_settings
 
 def get_playing(base_url: str, api_key: str) -> dict:
     url = f"{base_url}/Sessions?active=true"
-    response = requests.get(url, headers={
-        "X-Emby-Token": api_key,
-    })
-    return response.json()
+    try:
+        response = requests.get(url, headers={
+            "X-Emby-Token": api_key,
+        })
+        return response.json()
+    except Exception as e:
+        print(e)
+        return {}
 
 
 def get_jellyfin_status(user) -> tuple[str | None, str | None]:
