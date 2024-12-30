@@ -341,7 +341,7 @@ def generate_home_view(
                             "emoji": True,
                         },
                         "style": "danger",
-                        "url": "https://slickstats.dillonb07.studio/slack/install",
+                        "url": "https://slickstats.transcental.dev/slack/install",
                         "action_id": "authorise-btn",
                     }
                 ],
