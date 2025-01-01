@@ -76,7 +76,7 @@ def update_slack_status(emoji, status, user_id, token, expiry=0):
     if not user:
         return
     emojis = [
-        user.get(emoji_name, "")
+        user.get(emoji_name, next((status.get("default_emoji") for status in STATUSES if status.get("emoji") == emoji_name), ""))
         for emoji_name in [status["emoji"] for status in STATUSES]
     ]
     emojis.append(user.get("huddle_emoji", ":headphones:"))
