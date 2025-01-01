@@ -7,6 +7,27 @@ from utils.slack import app, update_slack_pfp, update_slack_status
 from utils.update import update_status
 from utils.views import generate_home_view
 
+def get_home(user_data):
+    return generate_home_view(
+        lastfm_username=user_data.get("lastfm_username", None),
+        lastfm_api_key=user_data.get("lastfm_api_key", None),
+        steam_id=user_data.get("steam_id", None),
+        steam_api_key=user_data.get("steam_api_key", None),
+        jellyfin_url=user_data.get("jellyfin_url", None),
+        jellyfin_api_key=user_data.get("jellyfin_api_key", None),
+        jellyfin_username=user_data.get("jellyfin_username", None),
+        music_emoji=user_data.get("music_emoji", ":musical_note:"),
+        gaming_emoji=user_data.get("gaming_emoji", ":video_game:"),
+        film_emoji=user_data.get("film_emoji", ":tv:"),
+        huddle_emoji=user_data.get("huddle_emoji", ":headphones:"),
+        default_pfp=user_data.get("default_pfp", None),
+        huddle_pfp=user_data.get("huddle_pfp", None),
+        music_pfp=user_data.get("music_pfp", None),
+        film_pfp=user_data.get("film_pfp", None),
+        gaming_pfp=user_data.get("gaming_pfp", None),
+        user_exists=bool(user_data),
+        enabled=user_data.get("enabled", True),
+    )
 
 @app.event("app_home_opened")
 def update_home_tab(client: WebClient, event, logger):
@@ -31,26 +52,7 @@ def update_home_tab(client: WebClient, event, logger):
         client.views_publish(
             user_id=event["user"],
             token=token,
-            view=generate_home_view(
-                lastfm_username=user_data.get("lastfm_username", None),
-                lastfm_api_key=user_data.get("lastfm_api_key", None),
-                steam_id=user_data.get("steam_id", None),
-                steam_api_key=user_data.get("steam_api_key", None),
-                jellyfin_url=user_data.get("jellyfin_url", None),
-                jellyfin_api_key=user_data.get("jellyfin_api_key", None),
-                jellyfin_username=user_data.get("jellyfin_username", None),
-                music_emoji=user_data.get("music_emoji", ":musical_note:"),
-                gaming_emoji=user_data.get("gaming_emoji", ":video_game:"),
-                film_emoji=user_data.get("film_emoji", ":tv:"),
-                huddle_emoji=user_data.get("huddle_emoji", ":headphones:"),
-                default_pfp=user_data.get("default_pfp", None),
-                huddle_pfp=user_data.get("huddle_pfp", None),
-                music_pfp=user_data.get("music_pfp", None),
-                film_pfp=user_data.get("film_pfp", None),
-                gaming_pfp=user_data.get("gaming_pfp", None),
-                user_exists=bool(user_data),
-                enabled=user_data.get("enabled", True),
-            ),
+            view=get_home(user_data)
         )
     except Exception as e:
         logger.error(f"Error publishing home tab: {e}")
@@ -98,6 +100,12 @@ def submit_settings(ack: Ack, body):
                     data[block_id] = action["selected_option"]["value"]
 
     update_user_settings(body["user"]["id"], data)
+    user = get_user_settings(user_id=body["user"]["id"])
+    app.client.views_publish(
+        user_id=body["user"]["id"],
+        token=body["token"],
+        view=get_home(user)
+    )
 
 
 @app.action("toggle_enabled")
