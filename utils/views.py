@@ -64,19 +64,22 @@ def generate_home_view(
                 },
             },
             {
-                "type": "actions",
-                "elements": [
-                    {
-                        "type": "button",
-                        "text": {
-                            "type": "plain_text",
-                            "text": "Disable SlickStats" if enabled else "Enable SlickStats",
-                            "emoji": True,
-                        },
-                        "action_id": "toggle_enabled",
-                        "value": "toggle_enabled"
-                    }
-                ]
+			"type": "section",
+    			"text": {
+    				"type": "mrkdwn",
+    				"text": "SlickStats is currently enabled and your status is being updated! :neodog_happy:" if enabled else "SlickStats is currently disabled. Your status will not be updated. :neodog_sob:"
+    			},
+    			"accessory": {
+    				"type": "button",
+    				"text": {
+    					"type": "plain_text",
+    					"text": "Disable" if enabled else "Enable",
+    					"emoji": True
+    				},
+    				"value": "toggle_enabled",
+    				"action_id": "toggle_enabled",
+    				"style": "danger" if enabled else "primary"
+    			}
             },
             {"type": "divider"},
             {
