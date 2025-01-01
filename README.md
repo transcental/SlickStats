@@ -35,7 +35,7 @@ Make a Slack app with the following manifest (make sure to switch out the URL to
         "name": "Slick Stats",
         "description": "Update your status to show what you're doing across other services!",
         "background_color": "#5c235c",
-        "long_description": "Slick Stats automatically updates your status to show what you're doing on other services throughout a variety of APIs.\r\n\r\nCurrently supported:\r\n- Last.fm - `{song} - {artist}`\r\n- Steam - `Playing {game} via Steam`\r\n\r\nComing soon:\r\n- Nintendo Switch\r\n\r\nGot a request? Submit an issue at https://github.com/DillonB07/SlickStats!"
+        "long_description": "Slick Stats automatically updates your status to show what you're doing on other services throughout a variety of APIs.\r\n\r\nCurrently supported:\r\n- Last.fm - `{song} - {artist}`\r\n- Steam - `Playing {game} via Steam`\r\n\r\nComing soon:\r\n- Nintendo Switch\r\n\r\nGot a request? Submit an issue at https://github.com/transcental/SlickStats!"
     },
     "features": {
         "app_home": {
@@ -60,17 +60,17 @@ Make a Slack app with the following manifest (make sure to switch out the URL to
             ],
             "bot": [
                 "chat:write",
-                "im:history",
-                "users.profile:read",
                 "commands",
+                "im:history",
                 "team:read",
-                "users:read"
+                "users.profile:read",
+                "users:read",
+                "emoji:read"
             ]
         }
     },
     "settings": {
         "event_subscriptions": {
-            "request_url": "URL/events/slack",
             "bot_events": [
                 "app_home_opened",
                 "message.im",
@@ -78,11 +78,10 @@ Make a Slack app with the following manifest (make sure to switch out the URL to
             ]
         },
         "interactivity": {
-            "is_enabled": true,
-            "request_url": "URL/events/slack"
+            "is_enabled": true
         },
         "org_deploy_enabled": false,
-        "socket_mode_enabled": false,
+        "socket_mode_enabled": true,
         "token_rotation_enabled": false
     }
 }
