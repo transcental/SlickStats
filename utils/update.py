@@ -11,9 +11,12 @@ from utils.slack import update_slack_status
 def update_status():
     """ """
     threading.Timer(25, update_status).start()
-    users = get_all_users()
+    users = get_all_users(enabled=True)
+    if not users:
+        print("No users found")
+        return
 
-    for user in list(users):
+    for user in users:
         set = False
         installation = env.installation_store.find_installation(
             user_id=user.get("user_id")

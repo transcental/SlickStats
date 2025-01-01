@@ -39,7 +39,7 @@ class MongoDBInstallationStore(InstallationStore):
         users = db.users
         users.update_one(
             {"user_id": installation.user_id},
-            {"$set": {"user_id": installation.user_id}},
+            {"$set": {"user_id": installation.user_id, "enabled": True}},
             upsert=True
         )
 

@@ -12,6 +12,7 @@ def generate_home_view(
     huddle_pfp: str | None,
     gaming_pfp: str | None,
     user_exists: bool,
+    enabled: bool
 ) -> dict:
     if not user_exists:
         return {
@@ -61,6 +62,21 @@ def generate_home_view(
                     "text": "SlickStats Settings",
                     "emoji": True,
                 },
+            },
+            {
+                "type": "actions",
+                "elements": [
+                    {
+                        "type": "button",
+                        "text": {
+                            "type": "plain_text",
+                            "text": "Disable SlickStats" if enabled else "Enable SlickStats",
+                            "emoji": True,
+                        },
+                        "action_id": "toggle_enabled",
+                        "value": "toggle_enabled"
+                    }
+                ]
             },
             {"type": "divider"},
             {

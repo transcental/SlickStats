@@ -2,7 +2,7 @@ from slack_sdk import WebClient
 
 from utils.db import get_user_settings, update_user_settings
 from utils.env import env
-from utils.slack import app, update_slack_pfp
+from utils.slack import app, update_slack_pfp, update_slack_status
 from utils.update import update_status
 from utils.views import generate_home_view
 
@@ -44,6 +44,7 @@ def update_home_tab(client: WebClient, event, logger):
                 film_pfp=user_data.get("film_pfp", None),
                 gaming_pfp=user_data.get("gaming_pfp", None),
                 user_exists=bool(user_data),
+                enabled=user_data.get("enabled", True)
             ),
         )
     except Exception as e:
@@ -73,6 +74,21 @@ def submit_settings(ack, body):
 
     update_user_settings(body["user"]["id"], data)
 
+
+@app.action("toggle_enabled")
+def toggle_enabled(ack, body):
+    ack()
+    user = get_user_settings(user_id=body["user"]["id"])
+    if not user: return
+    update_user_settings(body["user"]["id"], {"enabled": not user.get("enabled", True)})
+    installation = env.installation_store.find_installation(user_id=body["user"]["id"])
+    if not installation: return
+    update_slack_status(
+        emoji="",
+        status="",
+        user_id=body["user"]["id"],
+        token=installation.user_token,
+    )
 
 @app.event("user_huddle_changed")
 def huddle_changed(event):
