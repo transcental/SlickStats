@@ -79,6 +79,7 @@ def update_slack_status(emoji, status, user_id, token, expiry=0):
         user.get(emoji_name, "")
         for emoji_name in [status["emoji"] for status in STATUSES]
     ]
+    emojis.append(user.get("huddle_emoji", ":headphones:"))
 
     if status_emoji in emojis or status_emoji == "":
         current_status_text = current_status["profile"].get("status_text", "")

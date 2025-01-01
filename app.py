@@ -101,9 +101,11 @@ def submit_settings(ack: Ack, body):
 
     update_user_settings(body["user"]["id"], data)
     user = get_user_settings(user_id=body["user"]["id"])
+    installation = env.installation_store.find_installation(user_id=body["user"]["id"])
+    if not installation: return
     app.client.views_publish(
         user_id=body["user"]["id"],
-        token=body["token"],
+        token=installation.bot_token,
         view=get_home(user)
     )
 
@@ -156,15 +158,15 @@ def huddle_changed(event):
     user = get_user_settings(user_id=event["user"]["id"])
     if not user or not user.get("enabled", True):
         return
+        
+    installation = env.installation_store.find_installation(
+        user_id=event["user"]["id"]
+    )
+    if not installation: return
 
     match in_huddle:
         case "in_a_huddle":
             if user.get("pfp") != "huddle_pfp":
-                installation = env.installation_store.find_installation(
-                    user_id=event["user"]["id"]
-                )
-                if not installation:
-                    return
                 update_slack_pfp(
                     new_pfp_type="huddle_pfp",
                     user_id=event["user"]["id"],
@@ -182,11 +184,6 @@ def huddle_changed(event):
                     )
         case "default_unset" | None:
             if user.get("pfp") == "huddle_pfp":
-                installation = env.installation_store.find_installation(
-                    user_id=event["user"]["id"]
-                )
-                if not installation:
-                    return
                 update_slack_pfp(
                     new_pfp_type="default_pfp",
                     user_id=event["user"]["id"],
