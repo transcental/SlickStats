@@ -54,11 +54,11 @@ def update_status():
                     img_url=user.get(status.get("pfp"), None),
                 )
                 set = True
-                break
+                continue
 
         if not set or current_pfp is None:
             if current_pfp == "huddle_pfp":
-                return
+                continue
             update_slack_status(emoji="", status="", user_id=user_id, token=user_token)
             update_slack_pfp(
                 new_pfp_type="default_pfp",
