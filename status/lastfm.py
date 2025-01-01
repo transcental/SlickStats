@@ -13,7 +13,10 @@ def get_playing(api_key: str, username: str) -> dict:
     """
     url = f"{BASE_URL}?method=user.getrecenttracks&api_key={api_key}&format=json&user={username}"
     response = requests.get(url)
-    return response.json()
+    try:
+        return response.json()
+    except:
+        return None
 
 
 def get_lastfm_status(user) -> tuple[str | None, str | None]:
@@ -30,6 +33,8 @@ def get_lastfm_status(user) -> tuple[str | None, str | None]:
         return None, None
 
     playing = get_playing(api_key, username)
+    if not playing:
+        return None, None
     current = playing.get("recenttracks", {}).get("track", [])
     if not current:
         return None, None
