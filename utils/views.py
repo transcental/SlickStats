@@ -6,13 +6,17 @@ def generate_home_view(
     jellyfin_url: str | None,
     jellyfin_api_key: str | None,
     jellyfin_username: str | None,
+    music_emoji: str,
+    gaming_emoji: str,
+    film_emoji: str,
+    huddle_emoji: str,
     default_pfp: str | None,
     music_pfp: str | None,
     film_pfp: str | None,
     huddle_pfp: str | None,
     gaming_pfp: str | None,
     user_exists: bool,
-    enabled: bool
+    enabled: bool,
 ) -> dict:
     if not user_exists:
         return {
@@ -64,26 +68,39 @@ def generate_home_view(
                 },
             },
             {
-			"type": "section",
-    			"text": {
-    				"type": "mrkdwn",
-    				"text": "SlickStats is currently enabled and your status is being updated! :neodog_happy:" if enabled else "SlickStats is currently disabled. Your status will not be updated. :neodog_sob:"
-    			},
-    			"accessory": {
-    				"type": "button",
-    				"text": {
-    					"type": "plain_text",
-    					"text": "Disable" if enabled else "Enable",
-    					"emoji": True
-    				},
-    				"value": "toggle_enabled",
-    				"action_id": "toggle_enabled",
-    				"style": "danger" if enabled else "primary"
-    			}
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": (
+                        "SlickStats is currently enabled and your status is being updated! :neodog_happy:"
+                        if enabled
+                        else "SlickStats is currently disabled. Your status will not be updated. :neodog_sob:"
+                    ),
+                },
+                "accessory": {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "Disable" if enabled else "Enable",
+                        "emoji": True,
+                    },
+                    "value": "toggle_enabled",
+                    "action_id": "toggle_enabled",
+                    "style": "danger" if enabled else "primary",
+                },
             },
             {"type": "divider"},
             {
+                "type": "header",
+                "text": {
+                    "type": "plain_text",
+                    "text": "API Keys",
+                    "emoji": True,
+                },
+            },
+            {
                 "type": "input",
+                "block_id": "lastfm_username",
                 "element": {
                     "type": "plain_text_input",
                     "action_id": "lastfm_username",
@@ -101,6 +118,7 @@ def generate_home_view(
             },
             {
                 "type": "input",
+                "block_id": "lastfm_api_key",
                 "element": {
                     "type": "plain_text_input",
                     "action_id": "lastfm_api_key",
@@ -124,6 +142,7 @@ def generate_home_view(
             {"type": "divider"},
             {
                 "type": "input",
+                "block_id": "steam_id",
                 "element": {
                     "type": "plain_text_input",
                     "action_id": "steam_id",
@@ -142,6 +161,7 @@ def generate_home_view(
             },
             {
                 "type": "input",
+                "block_id": "steam_api_key",
                 "element": {
                     "type": "plain_text_input",
                     "action_id": "steam_api_key",
@@ -165,6 +185,7 @@ def generate_home_view(
             {"type": "divider"},
             {
                 "type": "input",
+                "block_id": "jellyfin_url",
                 "element": {
                     "type": "plain_text_input",
                     "action_id": "jellyfin_url",
@@ -183,6 +204,7 @@ def generate_home_view(
             },
             {
                 "type": "input",
+                "block_id": "jellyfin_api_key",
                 "element": {
                     "type": "plain_text_input",
                     "action_id": "jellyfin_api_key",
@@ -205,6 +227,7 @@ def generate_home_view(
             },
             {
                 "type": "input",
+                "block_id": "jellyfin_username",
                 "element": {
                     "type": "plain_text_input",
                     "action_id": "jellyfin_username",
@@ -227,7 +250,149 @@ def generate_home_view(
             },
             {"type": "divider"},
             {
+                "type": "header",
+                "text": {
+                    "type": "plain_text",
+                    "text": "Emojis",
+                    "emoji": True,
+                },
+            },
+            {
                 "type": "input",
+                "block_id": "music_emoji",
+                "element": {
+                    "action_id": "emojis",
+                    "type": "external_select",
+                    "placeholder": {"type": "plain_text", "text": "Choose an emoji"},
+                    "initial_option": {
+                        "text": {
+                            "type": "plain_text",
+                            "text": f"{music_emoji} {music_emoji.replace(':', '')}",
+                        },
+                        "value": music_emoji,
+                    },
+                    "min_query_length": 0,
+                },
+                "label": {
+                    "type": "plain_text",
+                    "text": "Music Emoji",
+                    "emoji": False,
+                },
+            },
+            {
+                "type": "context",
+                "elements": [
+                    {
+                        "type": "mrkdwn",
+                        "text": "_This will be your status emoji when listening to music_",
+                    }
+                ],
+            },
+            {
+                "type": "input",
+                "block_id": "gaming_emoji",
+                "element": {
+                    "action_id": "emojis",
+                    "type": "external_select",
+                    "placeholder": {"type": "plain_text", "text": "Choose an emoji"},
+                    "initial_option": {
+                        "text": {
+                            "type": "plain_text",
+                            "text": f"{gaming_emoji} {gaming_emoji.replace(':', '')}",
+                        },
+                        "value": gaming_emoji,
+                    },
+                    "min_query_length": 0,
+                },
+                "label": {
+                    "type": "plain_text",
+                    "text": "Gaming Emoji",
+                    "emoji": False,
+                },
+            },
+            {
+                "type": "context",
+                "elements": [
+                    {
+                        "type": "mrkdwn",
+                        "text": "_This will be your status emoji when playing a game_",
+                    }
+                ],
+            },
+            {
+                "type": "input",
+                "block_id": "film_emoji",
+                "element": {
+                    "action_id": "emojis",
+                    "type": "external_select",
+                    "placeholder": {"type": "plain_text", "text": "Choose an emoji"},
+                    "initial_option": {
+                        "text": {
+                            "type": "plain_text",
+                            "text": f"{film_emoji} {film_emoji.replace(':', '')}",
+                        },
+                        "value": film_emoji,
+                    },
+                    "min_query_length": 0,
+                },
+                "label": {
+                    "type": "plain_text",
+                    "text": "Film Emoji",
+                    "emoji": False,
+                },
+            },
+            {
+                "type": "context",
+                "elements": [
+                    {
+                        "type": "mrkdwn",
+                        "text": "_This will be your status emoji when watching a film or tv show_",
+                    }
+                ],
+            },
+            {
+                "type": "input",
+                "block_id": "huddle_emoji",
+                "element": {
+                    "action_id": "emojis",
+                    "type": "external_select",
+                    "placeholder": {"type": "plain_text", "text": "Choose an emoji"},
+                    "initial_option": {
+                        "text": {
+                            "type": "plain_text",
+                            "text": f"{huddle_emoji} {huddle_emoji.replace(':', '')}",
+                        },
+                        "value": huddle_emoji,
+                    },
+                    "min_query_length": 0,
+                },
+                "label": {
+                    "type": "plain_text",
+                    "text": "Huddle Emoji",
+                    "emoji": False,
+                },
+            },
+            {
+                "type": "context",
+                "elements": [
+                    {
+                        "type": "mrkdwn",
+                        "text": "_This will be your status emoji when in a huddle. Select :headphones: to let Slack handle it._",
+                    }
+                ],
+            },
+            {"type": "divider"},
+            {
+                "type": "header",
+                "text": {
+                    "type": "plain_text",
+                    "text": "Profile Pictures",
+                    "emoji": True,
+                },
+            },
+            {
+                "type": "input",
+                "block_id": "default_pfp",
                 "element": {
                     "type": "plain_text_input",
                     "action_id": "default_pfp",
@@ -250,6 +415,7 @@ def generate_home_view(
             },
             {
                 "type": "input",
+                "block_id": "music_pfp",
                 "element": {
                     "type": "plain_text_input",
                     "action_id": "music_pfp",
@@ -263,6 +429,7 @@ def generate_home_view(
             },
             {
                 "type": "input",
+                "block_id": "film_pfp",
                 "element": {
                     "type": "plain_text_input",
                     "action_id": "film_pfp",
@@ -285,6 +452,7 @@ def generate_home_view(
             },
             {
                 "type": "input",
+                "block_id": "huddle_pfp",
                 "element": {
                     "type": "plain_text_input",
                     "action_id": "huddle_pfp",
@@ -307,6 +475,7 @@ def generate_home_view(
             },
             {
                 "type": "input",
+                "block_id": "gaming_pfp",
                 "element": {
                     "type": "plain_text_input",
                     "action_id": "gaming_pfp",

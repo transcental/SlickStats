@@ -5,7 +5,7 @@ from slack_bolt.oauth.oauth_settings import OAuthSettings
 from status.jellyfin import get_jellyfin_status
 from status.lastfm import get_lastfm_status
 from status.steam import get_steam_status
-from utils.db import update_user_settings
+from utils.db import update_user_settings, get_user_settings
 from utils.env import env
 
 from io import BytesIO
@@ -13,21 +13,24 @@ from io import BytesIO
 STATUSES = [
     {
         "name": "Steam",
-        "emoji": ":video_game:",
+        "emoji": "gaming_emoji",
+        "default_emoji": ":video_game:",
         "status": "Playing (custom) via Steam",
         "pfp": "gaming_pfp",
         "function": get_steam_status,
     },
     {
         "name": "Jellyfin",
-        "emoji": ":tv:",
+        "emoji": "film_emoji",
+        "default_emoji": ":tv:",
         "status": "Watching (custom)",
         "pfp": "film_pfp",
         "function": get_jellyfin_status,
     },
     {
         "name": "Last.fm",
-        "emoji": ":musical_note:",
+        "emoji": "music_emoji",
+        "default_emoji": ":musical_note:",
         "status": "(custom)",
         "pfp": "music_pfp",
         "function": get_lastfm_status,
@@ -39,7 +42,14 @@ oauth_settings = OAuthSettings(
     client_secret=env.slack_client_secret,
     installation_store=env.installation_store,
     user_scopes=["users.profile:read", "users.profile:write", "users:read"],
-    scopes=["chat:write", "im:history", "users.profile:read", "commands", "team:read", "users:read"],
+    scopes=[
+        "chat:write",
+        "im:history",
+        "users.profile:read",
+        "commands",
+        "team:read",
+        "users:read",
+    ],
 )
 
 app = App(signing_secret=env.slack_signing_secret, oauth_settings=oauth_settings)
@@ -61,17 +71,34 @@ def update_slack_status(emoji, status, user_id, token, expiry=0):
     else:
         status_emoji = ""
 
-    emojis = [e.get("emoji") for e in STATUSES]
+    user = get_user_settings(user_id)
+    if not user:
+        return
+    emojis = [
+        user.get(emoji_name, "")
+        for emoji_name in [status["emoji"] for status in STATUSES]
+    ]
 
     if status_emoji in emojis or status_emoji == "":
         current_status_text = current_status["profile"].get("status_text", "")
         if current_status_text == status:
             return
+
         app.client.users_profile_set(
             user=user_id,
             profile={
                 "status_text": status,
-                "status_emoji": emoji,
+                "status_emoji": user.get(
+                    emoji,
+                    next(
+                        (
+                            status.get("default_emoji")
+                            for status in STATUSES
+                            if status.get("emoji") == emoji
+                        ),
+                        "",
+                    ),
+                ),
                 "status_expiration": expiry,
             },
             token=token,
@@ -81,7 +108,7 @@ def update_slack_status(emoji, status, user_id, token, expiry=0):
 def update_slack_pfp(new_pfp_type, user_id, current_pfp, bot_token, token, img_url):
     """
     Update Slack profile picture if the new type is different from the current one and a valid image URL is provided.
-    
+
     :param new_pfp_type: The new profile picture type.
     :param user_id: The Slack user ID.
     :param current_pfp: The current profile picture type.
@@ -92,15 +119,15 @@ def update_slack_pfp(new_pfp_type, user_id, current_pfp, bot_token, token, img_u
         update_user_settings(user_id, {"pfp": new_pfp_type})
         try:
             res = requests.get(img_url)
-            if res.status_code != 200 or 'image' not in res.headers['Content-Type']:
+            if res.status_code != 200 or "image" not in res.headers["Content-Type"]:
                 # Notify user that the image is invalid
                 app.client.chat_postMessage(
                     channel=user_id,
                     text=f"The supplied image URL for {new_pfp_type} appears to be invalid. Please make sure the correct image URL is supplied on my App home.",
-                    token=bot_token
+                    token=bot_token,
                 )
                 return
-            
+
             content = BytesIO(res.content)
             app.client.users_setPhoto(image=content, token=token)
         except Exception as e:
@@ -108,7 +135,7 @@ def update_slack_pfp(new_pfp_type, user_id, current_pfp, bot_token, token, img_u
             app.client.chat_postMessage(
                 channel=user_id,
                 text=f"An error occurred while updating the profile picture: {str(e)}",
-                token=bot_token
+                token=bot_token,
             )
     return
 

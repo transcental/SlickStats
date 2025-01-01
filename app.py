@@ -1,5 +1,6 @@
+from slack_bolt.adapter.socket_mode import SocketModeHandler
 from slack_sdk import WebClient
-
+from slack_bolt import Ack
 from utils.db import get_user_settings, update_user_settings
 from utils.env import env
 from utils.slack import app, update_slack_pfp, update_slack_status
@@ -38,13 +39,17 @@ def update_home_tab(client: WebClient, event, logger):
                 jellyfin_url=user_data.get("jellyfin_url", None),
                 jellyfin_api_key=user_data.get("jellyfin_api_key", None),
                 jellyfin_username=user_data.get("jellyfin_username", None),
+                music_emoji=user_data.get("music_emoji", ":musical_note:"),
+                gaming_emoji=user_data.get("gaming_emoji", ":video_game:"),
+                film_emoji=user_data.get("film_emoji", ":tv:"),
+                huddle_emoji=user_data.get("huddle_emoji", ":headphones:"),
                 default_pfp=user_data.get("default_pfp", None),
                 huddle_pfp=user_data.get("huddle_pfp", None),
                 music_pfp=user_data.get("music_pfp", None),
                 film_pfp=user_data.get("film_pfp", None),
                 gaming_pfp=user_data.get("gaming_pfp", None),
                 user_exists=bool(user_data),
-                enabled=user_data.get("enabled", True)
+                enabled=user_data.get("enabled", True),
             ),
         )
     except Exception as e:
@@ -52,7 +57,7 @@ def update_home_tab(client: WebClient, event, logger):
 
 
 @app.action("authorise-btn")
-def authorise_btn(ack):
+def authorise_btn(ack: Ack):
     """
 
     :param ack:
@@ -63,26 +68,48 @@ def authorise_btn(ack):
 
 
 @app.action("submit_settings")
-def submit_settings(ack, body):
+def submit_settings(ack: Ack, body):
     ack()
-    settings = ["lastfm_username", "lastfm_api_key", "steam_id", "steam_api_key", "jellyfin_url", "jellyfin_api_key", "jellyfin_username", "default_pfp", "huddle_pfp", "music_pfp", "film_pfp", "gaming_pfp"]
+    settings = [
+        "lastfm_username",
+        "lastfm_api_key",
+        "steam_id",
+        "steam_api_key",
+        "jellyfin_url",
+        "jellyfin_api_key",
+        "jellyfin_username",
+        "default_pfp",
+        "huddle_pfp",
+        "music_pfp",
+        "film_pfp",
+        "gaming_pfp",
+        "music_emoji",
+        "gaming_emoji",
+        "film_emoji",
+        "huddle_emoji",
+    ]
     data = {}
-    for block in body["view"]["state"]["values"].values():
-        for setting in settings:
-            if setting in block:
-                data[setting] = block[setting]["value"]
+    for block_id, block in body["view"]["state"]["values"].items():
+        if block_id in settings:
+            for action in block.values():
+                if "value" in action:
+                    data[block_id] = action["value"]
+                elif "selected_option" in action:
+                    data[block_id] = action["selected_option"]["value"]
 
     update_user_settings(body["user"]["id"], data)
 
 
 @app.action("toggle_enabled")
-def toggle_enabled(ack, body):
+def toggle_enabled(ack: Ack, body):
     ack()
     user = get_user_settings(user_id=body["user"]["id"])
-    if not user: return
+    if not user:
+        return
     update_user_settings(body["user"]["id"], {"enabled": not user.get("enabled", True)})
     installation = env.installation_store.find_installation(user_id=body["user"]["id"])
-    if not installation: return
+    if not installation:
+        return
     update_slack_status(
         emoji="",
         status="",
@@ -90,16 +117,46 @@ def toggle_enabled(ack, body):
         token=installation.user_token,
     )
 
+
+@app.options("emojis")
+def emojis_data_source_handler(ack: Ack, body):
+    keyword = body.get("value")
+    installation = env.installation_store.find_installation(user_id=body["user"]["id"])
+    if not installation:
+        return
+
+    emojis = app.client.emoji_list(token=installation.bot_token).get("emoji", [])
+
+    options = [
+        {
+            "text": {"type": "plain_text", "text": f":{emoji}: {emoji}"},
+            "value": f":{emoji}:",
+        }
+        for emoji in emojis
+    ]
+
+    if keyword and len(keyword) > 0:
+        options = [option for option in options if keyword in option["text"]["text"]]
+        ack(options=options[:100])
+    else:
+        ack(options=options[:100])
+
+
 @app.event("user_huddle_changed")
 def huddle_changed(event):
     in_huddle = event.get("user", {}).get("profile", {}).get("huddle_state", None)
     user = get_user_settings(user_id=event["user"]["id"])
-    if not user: return
+    if not user or not user.get("enabled", True):
+        return
+
     match in_huddle:
         case "in_a_huddle":
-            if user.get('pfp') != "huddle_pfp":
-                installation = env.installation_store.find_installation(user_id=event["user"]["id"])
-                if not installation: return
+            if user.get("pfp") != "huddle_pfp":
+                installation = env.installation_store.find_installation(
+                    user_id=event["user"]["id"]
+                )
+                if not installation:
+                    return
                 update_slack_pfp(
                     new_pfp_type="huddle_pfp",
                     user_id=event["user"]["id"],
@@ -108,10 +165,20 @@ def huddle_changed(event):
                     current_pfp=user.get("pfp"),
                     img_url=user.get("huddle_pfp", None),
                 )
+                if user.get("huddle_emoji", ":headphones:") != ":headphones:":
+                    update_slack_status(
+                        emoji="huddle_emoji",
+                        status="In a huddle",
+                        user_id=event["user"]["id"],
+                        token=installation.user_token,
+                    )
         case "default_unset" | None:
-            if user.get('pfp') == "huddle_pfp":
-                installation = env.installation_store.find_installation(user_id=event["user"]["id"])
-                if not installation: return
+            if user.get("pfp") == "huddle_pfp":
+                installation = env.installation_store.find_installation(
+                    user_id=event["user"]["id"]
+                )
+                if not installation:
+                    return
                 update_slack_pfp(
                     new_pfp_type="default_pfp",
                     user_id=event["user"]["id"],
@@ -120,6 +187,13 @@ def huddle_changed(event):
                     current_pfp=user.get("pfp"),
                     img_url=user.get("default_pfp", None),
                 )
+                if user.get("huddle_emoji", ":headphones:") != ":headphones:":
+                    update_slack_status(
+                        emoji="",
+                        status="",
+                        user_id=event["user"]["id"],
+                        token=installation.user_token,
+                    )
 
 
 if __name__ == "__main__":
@@ -127,4 +201,5 @@ if __name__ == "__main__":
     print("Connected to MongoDB")
     update_status()
     print(f"App is running on port {env.port}")
+    SocketModeHandler(app, env.slack_app_token).connect()
     app.start(port=env.port)
