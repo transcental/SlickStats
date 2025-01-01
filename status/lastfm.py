@@ -4,7 +4,7 @@ from utils.db import update_user_settings
 BASE_URL = "http://ws.audioscrobbler.com/2.0/"
 
 
-def get_playing(api_key: str, username: str) -> dict:
+def get_playing(api_key: str, username: str) -> dict | None:
     """
 
     :param api_key: str:
