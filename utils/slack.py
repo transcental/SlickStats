@@ -49,6 +49,7 @@ oauth_settings = OAuthSettings(
         "commands",
         "team:read",
         "users:read",
+        "emoji:read"
     ],
 )
 
