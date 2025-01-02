@@ -41,7 +41,7 @@ def update_status():
             if custom:
                 update_slack_status(
                     status.get("emoji"),
-                    status.get("status", "").replace("(custom)", custom),
+                    status.get("status", "").replace("(custom)", custom)[:100],
                     user_id=user_id,
                     token=user_token,
                 )
