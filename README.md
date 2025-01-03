@@ -1,41 +1,35 @@
 # Slick Stats
 
-Slick Stats is a Slack bot that will automatically update your Slack status to show what you're up to on a variety of platforms. To use it, just visit the app home, authorise and add your credentials!
+Slick Stats is a Slack bot that will automatically update your Slack status and profile picture to show what you're up to on a variety of platforms. To use it, just visit the app home [here](https://hackclub.slack.com/app_redirect?channel="U0754EVVCD9"), authorise and add your credentials!
 
 ## Features
 
 - PFP Switching for some services
 - Status setting for some services
-- PFP Switching for Slack huddles
 - Supports (in order of priority):
+  - Slack Huddles
   - Steam
   - Jellyfin
   - Last.fm
+- Logging of all status changes to a centralised channel
  
 Services coming soon:
-- Nintendo Switch
 - ListenBrainz
-
-### Huddle Status
-![Huddle example](https://cloud-9rhwby35x-hack-club-bot.vercel.app/0image.png)
-### Last.fm Status
-![Last.fm example](https://cloud-9rhwby35x-hack-club-bot.vercel.app/1image.png)
-### Steam Status
-![Steam example](https://cloud-9rhwby35x-hack-club-bot.vercel.app/2image.png)
-### Jellyfin Status
-![Jellyfin example](https://cloud-9rhwby35x-hack-club-bot.vercel.app/3image.png)
+- Nintendo Switch
 
 ## Setup
 
 Make a Slack app with the following manifest (make sure to switch out the URL to yours)
 
-```
+To install the app, visit your `https://YOUR-URL.TLD/slack/install`
+
+```json
 {
     "display_information": {
         "name": "Slick Stats",
         "description": "Update your status to show what you're doing across other services!",
         "background_color": "#5c235c",
-        "long_description": "Slick Stats automatically updates your status to show what you're doing on other services throughout a variety of APIs.\r\n\r\nCurrently supported:\r\n- Last.fm - `{song} - {artist}`\r\n- Steam - `Playing {game} via Steam`\r\n\r\nComing soon:\r\n- Nintendo Switch\r\n\r\nGot a request? Submit an issue at https://github.com/transcental/SlickStats!"
+        "long_description": "Slick Stats automatically updates your status to show what you're doing on other services throughout a variety of APIs.\r\n\r\nCurrently supported:\r\nLast.fm, Steam, Jellyfin, Slack Huddles\r\n\r\nComing soon:\r\nNintendo Switch, ListenBrainz\r\n\r\nGot a request? Submit an issue at https://github.com/transcental/SlickStats!"
     },
     "features": {
         "app_home": {
@@ -60,6 +54,7 @@ Make a Slack app with the following manifest (make sure to switch out the URL to
             ],
             "bot": [
                 "chat:write",
+                "chat:write.customize",
                 "commands",
                 "im:history",
                 "team:read",
@@ -99,6 +94,7 @@ python3.12 app.py
 You will also need the following in a `.env` file:
 
 ```
+SLACK_APP_TOKEN=""
 SLACK_CLIENT_ID=""
 SLACK_CLIENT_SECRET=""
 SLACK_SIGNING_SECRET=""
