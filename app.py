@@ -133,6 +133,7 @@ def emojis_data_source_handler(ack: Ack, body):
     keyword = body.get("value")
     installation = env.installation_store.find_installation(user_id=body["user"]["id"])
     if not installation:
+        ack()
         return
 
     emojis = app.client.emoji_list(token=installation.bot_token).get("emoji", [])
