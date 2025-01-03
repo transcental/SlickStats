@@ -3,7 +3,6 @@ from utils.db import update_user_settings
 
 BASE_URL = "http://ws.audioscrobbler.com/2.0/"
 
-
 def get_playing(api_key: str, username: str) -> dict | None:
     """
 
@@ -34,20 +33,22 @@ def get_lastfm_status(user) -> tuple[str | None, str | None]:
 
     playing = get_playing(api_key, username)
     if not playing:
+        update_user_settings(user.get("user_id"), {"current_song": None})
         return None, None
     current = playing.get("recenttracks", {}).get("track", [])
     if not current:
+        update_user_settings(user.get("user_id"), {"current_song": None})
         return None, None
     current = current[0]
     if current.get("@attr") and current.get("@attr").get("nowplaying"):
         new = f"{current.get('name')} - {current.get('artist')['#text']}"
         current_song = user.get("current_song")
         if current_song == new:
-            return new, None
+            return new, None 
         else:
             current_song = new
             update_user_settings(user.get("user_id"), {"current_song": current_song})
-            log_message = f"Last.fm: <https://last.fm/user/{username}|{username}> is playing {current.get('name')} by {current.get('artist')['#text']}"
+            log_message = f"<https://last.fm/user/{username}|{username}> is listening to <{current.get('url')}|*{current.get('name')}*> by {current.get('artist')['#text']}"
             return new, log_message
 
     else:

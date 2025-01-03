@@ -1,5 +1,5 @@
 import requests
-from slack_bolt import App
+from slack_bolt import App, Ack
 from slack_bolt.oauth.oauth_settings import OAuthSettings
 
 from status.jellyfin import get_jellyfin_status
@@ -44,6 +44,8 @@ oauth_settings = OAuthSettings(
     user_scopes=["users.profile:read", "users.profile:write", "users:read"],
     scopes=[
         "chat:write",
+        "chat:write.public",
+        "chat:write.customize",
         "im:history",
         "users.profile:read",
         "commands",
@@ -54,6 +56,23 @@ oauth_settings = OAuthSettings(
 )
 
 app = App(signing_secret=env.slack_signing_secret, oauth_settings=oauth_settings)
+
+
+@app.command("/current")
+def current_command(ack: Ack, body):
+    ack()
+    print('running')
+    user_id = body["user_id"]
+    channel_id = body["channel_id"]
+    user = get_user_settings(user_id)
+    if not user: return
+    
+    installation = env.installation_store.find_installation(user_id=user_id)
+    if not installation: return
+    token = installation.bot_token or ""
+
+    print(user)
+    log_to_slack(f"Fetching current status for {user.get('user_id')}\nCurrently listening to {user.get('current_song')}\nCurrently playing {user.get('current_game')}\nCurrently watching: {user.get('current_jellyfin')}", token, channel_id)
 
 
 def update_slack_status(emoji, status, user_id, token, expiry=0):
@@ -141,13 +160,10 @@ def update_slack_pfp(new_pfp_type, user_id, current_pfp, bot_token, token, img_u
     return
 
 
-def log_to_slack(message, token):
+def log_to_slack(message: str, token: str, channel_id: str = env.slack_log_channel, pfp: str | None = None, username: str | None = None):
     """
-
-    :param message:
-    :param token:
-
+    Log a message to the #log channel. Wrapper around chat.postMessage.
     """
     app.client.chat_postMessage(
-        channel=env.slack_log_channel, text=message, token=token
+        channel=channel_id, text=message, token=token, username=username, icon_url=pfp, unfurl_links=False
     )

@@ -1,4 +1,5 @@
 import requests
+import json
 from utils.db import update_user_settings
 
 
@@ -24,6 +25,7 @@ def get_jellyfin_status(user) -> tuple[str | None, str | None]:
     api_key = user.get("jellyfin_api_key")
     username = user.get("jellyfin_username")
     if not base_url or not api_key or not username:
+        update_user_settings(user.get("user_id"), {"current_jellyfin": None})
         return None, None
 
     sessions = get_playing(base_url, api_key) or []
@@ -34,17 +36,20 @@ def get_jellyfin_status(user) -> tuple[str | None, str | None]:
             break
 
     if not res:
+        update_user_settings(user.get("user_id"), {"current_jellyfin": None})
         return None, None
 
     type = res.get("NowPlayingItem", {}).get("Type")
     if type not in ["Movie", "Episode"]:
+        update_user_settings(user.get("user_id"), {"current_jellyfin": None})
         return None, None
     current = (
         res.get("NowPlayingItem", {}).get("Name")
         if type == "Movie"
-        else f"{res.get('NowPlayingItem', {}).get('SeriesName')} - {res.get('NowPlayingItem', {}).get('Name')}"
+        else f"{res.get('NowPlayingItem', {}).get('SeriesName')}: {res.get('NowPlayingItem', {}).get('Name')}"
     )
     if not current:
+        update_user_settings(user.get("user_id"), {"current_jellyfin": None})
         return None, None
 
     datestring = res.get("NowPlayingItem", {}).get("PremiereDate")
@@ -53,12 +58,18 @@ def get_jellyfin_status(user) -> tuple[str | None, str | None]:
     new = f"{current} ({year})" if year else current
 
     current_jellyfin = user.get("current_jellyfin")
-    if current_jellyfin == new:
-        return current, None
+    # if current_jellyfin == new:
+    #     return current, None
+    # else:
+    current_jellyfin = new
+    update_user_settings(
+        user.get("user_id"), {"current_jellyfin": current_jellyfin}
+    )
+    external_urls = res.get("NowPlayingItem", {}).get("ExternalUrls", [])
+    imdb = next((url.get("Url") for url in external_urls if url.get("Name") == "IMDb"))
+    if imdb:
+        dynamic_msg = f"<{imdb}|*{current}*> ({year})" if year else f"<{imdb}|*{current}*>"
     else:
-        current_jellyfin = new
-        update_user_settings(
-            user.get("user_id"), {"current_jellyfin": current_jellyfin}
-        )
-        log_message = f"Jellyfin: {username} is watching {new}"
-        return current_jellyfin, log_message
+        dynamic_msg = f"*{current}* ({year})" if year else current
+    log_message = f"{username} is watching {dynamic_msg}"
+    return current_jellyfin, log_message
