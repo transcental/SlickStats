@@ -12,17 +12,19 @@ def update_status():
     threading.Timer(25, update_status).start()
     users = get_all_users(enabled=True)
     if not users:
-        print("No users found")
         return
 
     for user in users:
         set = False
+        if user.get("in_huddle", False):
+            continue
+
         installation = env.installation_store.find_installation(
             user_id=user.get("user_id")
         )
         if not installation:
-            print("No installation found for user", user.get("user_id"))
             continue
+
         bot_token = installation.bot_token or ""
         user_token = installation.user_token
         user_id = user.get("user_id")
@@ -59,8 +61,6 @@ def update_status():
 
 
         if not set:
-            if current_pfp == "huddle_pfp":
-                continue
             update_slack_status(emoji="", status="", user_id=user_id, token=user_token)
             update_slack_pfp(
                 new_pfp_type="default_pfp",

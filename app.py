@@ -168,6 +168,7 @@ def huddle_changed(event):
     match in_huddle:
         case "in_a_huddle":
             if user.get("pfp") != "huddle_pfp":
+                update_user_settings(event["user"]["id"], {"in_huddle": True})
                 update_slack_pfp(
                     new_pfp_type="huddle_pfp",
                     user_id=event["user"]["id"],
@@ -185,6 +186,7 @@ def huddle_changed(event):
                     )
         case "default_unset" | None:
             if user.get("pfp") == "huddle_pfp":
+                update_user_settings(event["user"]["id"], {"in_huddle": False})
                 update_slack_pfp(
                     new_pfp_type="default_pfp",
                     user_id=event["user"]["id"],
