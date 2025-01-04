@@ -1,0 +1,23 @@
+name: Automatically deploy to nest
+
+on: [push]
+
+jobs:
+  
+  deploy-to-nest:
+      runs-on: ubuntu-latest
+      steps:
+      - name: Connect to ssh, pull and systemctl restart
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: hackclub.app
+          username: amber
+          key: ${{ secrets.KEY }}
+          port: 22
+          script: |
+            : # Load nix binaries
+            export PATH=/home/amber/.nix-profile/bin:$PATH
+            export PATH=/nix/amber/nix/profiles/default/bin:$PATH
+            cd /home/amber/SlickStats
+            git pull
+            systemctl --user restart slickstats.service
