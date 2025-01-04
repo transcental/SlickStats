@@ -1,34 +1,31 @@
-import requests
-import json
+import logging
 from utils.db import update_user_settings
+from utils.env import env
 
 
-def get_playing(base_url: str, api_key: str) -> dict:
+async def get_playing(base_url: str, api_key: str) -> dict:
     url = f"{base_url}/Sessions?active=true"
     try:
-        response = requests.get(
-            url,
-            headers={
-                "X-Emby-Token": api_key,
-            },
-        )
-        return response.json()
+        async with env.aiohttp_session.get(
+            url, headers={"X-Emby-Token": api_key}
+        ) as res:
+            return await res.json()
     except Exception as e:
-        print(e)
+        logging.error(e)
         return {}
 
 
-def get_jellyfin_status(user) -> tuple[str | None, str | None]:
+async def get_jellyfin_status(user) -> tuple[str | None, str | None]:
     if not user:
         return None, None
     base_url = user.get("jellyfin_url")
     api_key = user.get("jellyfin_api_key")
     username = user.get("jellyfin_username")
     if not base_url or not api_key or not username:
-        update_user_settings(user.get("user_id"), {"current_jellyfin": None})
+        await update_user_settings(user.get("user_id"), {"current_jellyfin": None})
         return None, None
 
-    sessions = get_playing(base_url, api_key) or []
+    sessions = await get_playing(base_url, api_key) or []
     res = None
     for session in sessions:
         if session.get("UserName") == username and session.get("NowPlayingItem"):
@@ -36,12 +33,12 @@ def get_jellyfin_status(user) -> tuple[str | None, str | None]:
             break
 
     if not res:
-        update_user_settings(user.get("user_id"), {"current_jellyfin": None})
+        await update_user_settings(user.get("user_id"), {"current_jellyfin": None})
         return None, None
 
     type = res.get("NowPlayingItem", {}).get("Type")
     if type not in ["Movie", "Episode"]:
-        update_user_settings(user.get("user_id"), {"current_jellyfin": None})
+        await update_user_settings(user.get("user_id"), {"current_jellyfin": None})
         return None, None
     current = (
         res.get("NowPlayingItem", {}).get("Name")
@@ -49,7 +46,7 @@ def get_jellyfin_status(user) -> tuple[str | None, str | None]:
         else f"{res.get('NowPlayingItem', {}).get('SeriesName')}: {res.get('NowPlayingItem', {}).get('Name')}"
     )
     if not current:
-        update_user_settings(user.get("user_id"), {"current_jellyfin": None})
+        await update_user_settings(user.get("user_id"), {"current_jellyfin": None})
         return None, None
 
     datestring = res.get("NowPlayingItem", {}).get("PremiereDate")
@@ -62,13 +59,17 @@ def get_jellyfin_status(user) -> tuple[str | None, str | None]:
         return current, None
     else:
         current_jellyfin = new
-        update_user_settings(
+        await update_user_settings(
             user.get("user_id"), {"current_jellyfin": current_jellyfin}
         )
         external_urls = res.get("NowPlayingItem", {}).get("ExternalUrls", [])
-        imdb = next((url.get("Url") for url in external_urls if url.get("Name") == "IMDb"))
+        imdb = next(
+            (url.get("Url") for url in external_urls if url.get("Name") == "IMDb")
+        )
         if imdb:
-            dynamic_msg = f"<{imdb}|*{current}*> ({year})" if year else f"<{imdb}|*{current}*>"
+            dynamic_msg = (
+                f"<{imdb}|*{current}*> ({year})" if year else f"<{imdb}|*{current}*>"
+            )
         else:
             dynamic_msg = f"*{current}* ({year})" if year else current
         log_message = f"{username} is watching {dynamic_msg}"
