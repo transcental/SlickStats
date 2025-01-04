@@ -1,6 +1,6 @@
 # Slick Stats
 
-Slick Stats is a Slack bot that will automatically update your Slack status and profile picture to show what you're up to on a variety of platforms. To use it, just visit the app home [here](https://hackclub.slack.com/app_redirect?channel="U0754EVVCD9"), authorise and add your credentials!
+Slick Stats is a Slack app that automatically updates your Slack status and profile picture to show what you're up to on a variety of platforms. To use it, just visit the app home [here](https://hackclub.slack.com/app_redirect?channel="U0754EVVCD9"), authorise and add your credentials!
 
 ## Features
 
@@ -17,11 +17,12 @@ Services coming soon:
 - ListenBrainz
 - Nintendo Switch
 
-## Setup
+## Contributing
+Contributions are welcome! If you're working on a feature, please open an issue first and say you're working on it. If you're having trouble, you can [message me on Slack](https://hackclub.slack.com/app_redirect?channel="U054VC2KM9P") or open an issue.
 
-Make a Slack app with the following manifest (make sure to switch out the URL to yours)
+### Setup
 
-To install the app, visit your `https://YOUR-URL.TLD/slack/install`
+Create a Slack app from the [dashboard](https://api.slack.com/apps) with the following manifest (make sure to switch out the URL to yours)
 
 ```json
 {
@@ -82,7 +83,17 @@ To install the app, visit your `https://YOUR-URL.TLD/slack/install`
 }
 ```
 
-After cloning the repo:
+After cloning the repo, you will need to add a `.env` file with the following variables. You can get copy `.env.example` and fill in the values.
+
+- Required
+  - `SLACK_APP_TOKEN` - The app token for your Slack app for connecting via Socket mode
+  - `SLACK_CLIENT_SECRET` - The client secret for your Slack app
+  - `SLACK_SIGNING_SECRET` - The signing secret for your Slack app
+  - `SLACK_LOG_CHANNEL` - The ID of the channel to log all status changes to
+  - `MONGO_URI` - The URI to your MongoDB database (e.g. `mongodb://admin:password@localhost:27017/?retryWrites=true&w=majority&appName=SlickStats`)
+- Optional
+  - `ENV` - Should be set to `development` or `production`. Defaults to `development`
+  - `PORT` - The port to run the Starlette server on. Defaults to `3000`
 
 ```sh
 python3.12 -m venv .venv
@@ -91,14 +102,8 @@ python3.12 -m pip install -r requirements.txt
 python3.12 app.py
 ```
 
-You will also need the following in a `.env` file:
+To install the app, visit your `https://YOUR-URL.TLD/slack/install` and add the app to your workspace.
 
-```
-SLACK_APP_TOKEN=""
-SLACK_CLIENT_ID=""
-SLACK_CLIENT_SECRET=""
-SLACK_SIGNING_SECRET=""
-SLACK_LOG_CHANNEL=""
 
-MONGO_URI=""
-```
+## License
+All code in this repository is licensed under the GNU Affero General Public License v3.0, unless otherwise specified. See the [LICENSE](LICENSE.md) file for more information.
