@@ -24,7 +24,7 @@ async def update_status(delay: int = 25):
         if user.get("in_huddle", False):
             continue
 
-        installation = await env.installation_store.find_installation(
+        installation = await env.installation_store.async_find_installation(
             user_id=user.get("user_id")
         )
         if not installation:

@@ -19,7 +19,7 @@ class MongoDBInstallationStore(AsyncInstallationStore):
         self.db = mongo_client[db_name]
         self.collection = self.db[collection_name]
 
-    async def save(self, installation: Installation):
+    async def async_save(self, installation: Installation):
         """
 
         :param installation: Installation:
@@ -43,7 +43,7 @@ class MongoDBInstallationStore(AsyncInstallationStore):
             upsert=True,
         )
 
-    async def find_bot(
+    async def async_find_bot(
         self,
         *,
         enterprise_id: Optional[str] = None,
@@ -69,7 +69,7 @@ class MongoDBInstallationStore(AsyncInstallationStore):
             return Bot(**record["bot"])
         return None
 
-    async def find_installation(
+    async def async_find_installation(
         self,
         *,
         enterprise_id: Optional[str] = None,
@@ -97,7 +97,7 @@ class MongoDBInstallationStore(AsyncInstallationStore):
             return Installation(**record)
         return None
 
-    async def delete_bot(
+    async def async_delete_bot(
         self, *, enterprise_id: Optional[str] = None, team_id: Optional[str]
     ) -> None:
         """
@@ -112,7 +112,7 @@ class MongoDBInstallationStore(AsyncInstallationStore):
             {"$unset": {"bot": ""}},
         )
 
-    async def delete_installation(
+    async def async_delete_installation(
         self,
         *,
         enterprise_id: Optional[str] = None,
@@ -136,7 +136,7 @@ class MongoDBInstallationStore(AsyncInstallationStore):
         await self.collection.delete_one(query)
         await self.mongo_client["slickstats"].users.delete_one({"user_id": user_id})
 
-    async def find_installations(
+    async def async_find_installations(
         self, *, enterprise_id: Optional[str] = None, team_id: Optional[str] = None
     ):
         """

@@ -47,13 +47,13 @@ async def update_home_tab(client: AsyncWebClient, event, logger):
 
     """
     try:
-        user_data = get_user_settings(user_id=event["user"]) or {
+        user_data = await get_user_settings(user_id=event["user"]) or {
             "user_id": event["user"]
         }
 
         team_info = await client.team_info()
         team_id = team_info["team"]["id"]
-        installations = await env.installation_store.find_installations(team_id=team_id)
+        installations = await env.installation_store.async_find_installations(team_id=team_id)
         if not installations:
             return
         installation = installations[0]
@@ -108,7 +108,7 @@ async def submit_settings(ack: AsyncAck, body):
 
     await update_user_settings(body["user"]["id"], data)
     user = await get_user_settings(user_id=body["user"]["id"])
-    installation = await env.installation_store.find_installation(
+    installation = await env.installation_store.async_find_installation(
         user_id=body["user"]["id"]
     )
     if not installation:
@@ -127,7 +127,7 @@ async def toggle_enabled(ack: AsyncAck, body):
     await update_user_settings(
         body["user"]["id"], {"enabled": not user.get("enabled", True)}
     )
-    installation = await env.installation_store.find_installation(
+    installation = await env.installation_store.async_find_installation(
         user_id=body["user"]["id"]
     )
     if not installation:
@@ -143,7 +143,7 @@ async def toggle_enabled(ack: AsyncAck, body):
 @app.options("emojis")
 async def emojis_data_source_handler(ack: AsyncAck, body):
     keyword = body.get("value")
-    installation = await env.installation_store.find_installation(
+    installation = await env.installation_store.async_find_installation(
         user_id=body["user"]["id"]
     )
     if not installation:
@@ -175,7 +175,7 @@ async def huddle_changed(event):
     if not user or not user.get("enabled", True):
         return
 
-    installation = await env.installation_store.find_installation(
+    installation = await env.installation_store.async_find_installation(
         user_id=event["user"]["id"]
     )
     if not installation:
