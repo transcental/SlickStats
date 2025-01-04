@@ -64,10 +64,6 @@ app = AsyncApp(
     logger=logger,
 )
 
-logging.basicConfig(
-    level=logging.INFO if env.environment == "development" else logging.WARNING
-)
-
 
 ## NOT IMPLEMENTED YET
 # @app.command("/current")
