@@ -2,4 +2,5 @@ aiohttp
 python-dotenv
 motor
 slack-bolt
+uvicorn
 uvloop
