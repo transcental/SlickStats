@@ -58,18 +58,18 @@ def get_jellyfin_status(user) -> tuple[str | None, str | None]:
     new = f"{current} ({year})" if year else current
 
     current_jellyfin = user.get("current_jellyfin")
-    # if current_jellyfin == new:
-    #     return current, None
-    # else:
-    current_jellyfin = new
-    update_user_settings(
-        user.get("user_id"), {"current_jellyfin": current_jellyfin}
-    )
-    external_urls = res.get("NowPlayingItem", {}).get("ExternalUrls", [])
-    imdb = next((url.get("Url") for url in external_urls if url.get("Name") == "IMDb"))
-    if imdb:
-        dynamic_msg = f"<{imdb}|*{current}*> ({year})" if year else f"<{imdb}|*{current}*>"
+    if current_jellyfin == new:
+        return current, None
     else:
-        dynamic_msg = f"*{current}* ({year})" if year else current
-    log_message = f"{username} is watching {dynamic_msg}"
-    return current_jellyfin, log_message
+        current_jellyfin = new
+        update_user_settings(
+            user.get("user_id"), {"current_jellyfin": current_jellyfin}
+        )
+        external_urls = res.get("NowPlayingItem", {}).get("ExternalUrls", [])
+        imdb = next((url.get("Url") for url in external_urls if url.get("Name") == "IMDb"))
+        if imdb:
+            dynamic_msg = f"<{imdb}|*{current}*> ({year})" if year else f"<{imdb}|*{current}*>"
+        else:
+            dynamic_msg = f"*{current}* ({year})" if year else current
+        log_message = f"{username} is watching {dynamic_msg}"
+        return current_jellyfin, log_message
