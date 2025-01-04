@@ -57,6 +57,7 @@ oauth_settings = AsyncOAuthSettings(
 )
 
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 app = AsyncApp(
     signing_secret=env.slack_signing_secret,
