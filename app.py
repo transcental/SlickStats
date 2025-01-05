@@ -11,6 +11,10 @@ from utils.slack import app, update_slack_pfp, update_slack_status
 from utils.update import update_status
 from utils.views import generate_home_view
 
+logging.basicConfig(
+    level=logging.INFO,
+)
+
 executor = ThreadPoolExecutor(2)
 
 
@@ -221,6 +225,7 @@ async def huddle_changed(event):
 
 
 def run_uvicorn():
+    logging.info(f"Starting Uvicorn app on port {env.port}")
     uvicorn.run(
         "utils.starlette:app",
         host="0.0.0.0",
@@ -239,7 +244,6 @@ async def main():
     handler = AsyncSocketModeHandler(app, env.slack_app_token)
     logging.info("Starting Socket Mode handler")
     executor.submit(run_uvicorn)
-    logging.info(f"Uvicorn app is running on port {env.port}")
     await handler.start_async()
 
 
