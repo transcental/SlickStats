@@ -3,6 +3,7 @@ from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.routing import Route
 
+from app import main
 from utils.env import env
 from utils.slack import app as slack_app
 
@@ -28,4 +29,5 @@ app = Starlette(
         Route(path="/slack/install", endpoint=install, methods=["GET"]),
         Route(path="/slack/oauth_redirect", endpoint=oauth_redirect, methods=["GET"]),
     ],
+    lifespan=main
 )

@@ -1,7 +1,8 @@
 import asyncio
+import contextlib
 import logging
+from starlette.applications import Starlette
 import uvicorn
-from concurrent.futures import ThreadPoolExecutor
 from slack_bolt.adapter.socket_mode.async_handler import AsyncSocketModeHandler
 from slack_sdk.web.async_client import AsyncWebClient
 from slack_bolt.async_app import AsyncAck
@@ -14,8 +15,6 @@ from utils.views import generate_home_view
 logging.basicConfig(
     level=logging.INFO,
 )
-
-executor = ThreadPoolExecutor(2)
 
 
 def get_home(user_data):
@@ -223,18 +222,8 @@ async def huddle_changed(event):
                         token=installation.user_token,
                     )
 
-
-def run_uvicorn():
-    logging.info(f"Starting Uvicorn app on port {env.port}")
-    uvicorn.run(
-        "utils.starlette:app",
-        host="0.0.0.0",
-        port=env.port,
-        log_level="info" if env.environment != "production" else "warning",
-    )
-
-
-async def main():
+@contextlib.asynccontextmanager
+async def main(_app: Starlette):
     await env.async_init()
     await env.mongo_client.admin.command("ping")
     logging.info("Connected to MongoDB")
@@ -243,8 +232,12 @@ async def main():
 
     handler = AsyncSocketModeHandler(app, env.slack_app_token)
     logging.info("Starting Socket Mode handler")
-    executor.submit(run_uvicorn)
-    await handler.start_async()
+    await handler.connect_async()
+    logging.info(f"Starting Uvicorn app on port {env.port}")
+
+    yield
+    logging.info("Closing Socket Mode handler")
+    await handler.close_async()
 
 
 if __name__ == "__main__":
@@ -255,4 +248,11 @@ if __name__ == "__main__":
     except ImportError:
         pass
 
+
+    uvicorn.run(
+        "utils.starlette:app",
+        host="0.0.0.0",
+        port=env.port,
+        log_level="info" if env.environment != "production" else "warning",
+    )
     asyncio.run(main())

@@ -19,5 +19,7 @@ jobs:
             export PATH=/home/amber/.nix-profile/bin:$PATH
             export PATH=/nix/amber/nix/profiles/default/bin:$PATH
             cd /home/amber/SlickStats
+            source .venv/bin/activate
+            python3 -m pip install --upgrade -r requirements.txt
             git pull
             systemctl --user restart slickstats.service
