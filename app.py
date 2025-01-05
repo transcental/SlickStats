@@ -1,14 +1,19 @@
 import asyncio
 import contextlib
 import logging
+
 import uvicorn
 from slack_bolt.adapter.socket_mode.async_handler import AsyncSocketModeHandler
-from slack_sdk.web.async_client import AsyncWebClient
 from slack_bolt.async_app import AsyncAck
+from slack_sdk.web.async_client import AsyncWebClient
 from starlette.applications import Starlette
-from utils.db import get_user_settings, update_user_settings
+
+from utils.db import get_user_settings
+from utils.db import update_user_settings
 from utils.env import env
-from utils.slack import app, update_slack_pfp, update_slack_status
+from utils.slack import app
+from utils.slack import update_slack_pfp
+from utils.slack import update_slack_status
 from utils.update import update_status
 from utils.views import generate_home_view
 
@@ -17,7 +22,8 @@ logging.basicConfig(
 )
 
 
-def get_home(user_data):
+def get_home(user_data: dict) -> dict:
+    """Returns the home tab view with the user's settings"""
     return generate_home_view(
         lastfm_username=user_data.get("lastfm_username", None),
         lastfm_api_key=user_data.get("lastfm_api_key", None),
@@ -42,13 +48,7 @@ def get_home(user_data):
 
 @app.event("app_home_opened")
 async def update_home_tab(client: AsyncWebClient, event, logger):
-    """
-
-    :param client: WebClient:
-    :param event:
-    :param logger:
-
-    """
+    """Updates the home tab view when it's opened by the user with an interface for the user to update settings"""
     try:
         user_data = await get_user_settings(user_id=event["user"]) or {
             "user_id": event["user"]
@@ -56,7 +56,9 @@ async def update_home_tab(client: AsyncWebClient, event, logger):
 
         team_info = await client.team_info()
         team_id = team_info["team"]["id"]
-        installations = await env.installation_store.async_find_installations(team_id=team_id)
+        installations = await env.installation_store.async_find_installations(
+            team_id=team_id
+        )
         if not installations:
             return
         installation = installations[0]
@@ -70,17 +72,14 @@ async def update_home_tab(client: AsyncWebClient, event, logger):
 
 @app.action("authorise-btn")
 async def authorise_btn(ack: AsyncAck):
-    """
-
-    :param ack:
-
-    """
+    """This only needs to exist to acknowledge the button press"""
     await ack()
     return
 
 
 @app.action("submit_settings")
 async def submit_settings(ack: AsyncAck, body):
+    """Saves the settings submitted by the user and updates the home tab view"""
     await ack()
     settings = [
         "lastfm_username",
@@ -123,6 +122,7 @@ async def submit_settings(ack: AsyncAck, body):
 
 @app.action("toggle_enabled")
 async def toggle_enabled(ack: AsyncAck, body):
+    """Toggles the app on or off for the user"""
     await ack()
     user = await get_user_settings(user_id=body["user"]["id"])
     if not user:
@@ -145,6 +145,7 @@ async def toggle_enabled(ack: AsyncAck, body):
 
 @app.options("emojis")
 async def emojis_data_source_handler(ack: AsyncAck, body):
+    """Returns a list of emojis for the user to choose from"""
     keyword = body.get("value")
     installation = await env.installation_store.async_find_installation(
         user_id=body["user"]["id"]
@@ -173,6 +174,7 @@ async def emojis_data_source_handler(ack: AsyncAck, body):
 
 @app.event("user_huddle_changed")
 async def huddle_changed(event):
+    """Updates the user's Slack status and profile picture when they enter or leave a huddle"""
     in_huddle = event.get("user", {}).get("profile", {}).get("huddle_state", None)
     user = await get_user_settings(user_id=event["user"]["id"])
     if not user or not user.get("enabled", True):
@@ -222,10 +224,12 @@ async def huddle_changed(event):
                         token=installation.user_token,
                     )
 
+
 @contextlib.asynccontextmanager
 async def main(_app: Starlette):
+    """Runs the app and connects to the Slack API and MongoDB"""
     await env.async_init()
-    await env.mongo_client.admin.command("ping")
+    await env.motor_client.admin.command("ping")
     logging.info("Connected to MongoDB")
 
     asyncio.create_task(update_status(25))
@@ -247,7 +251,6 @@ if __name__ == "__main__":
         asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     except ImportError:
         pass
-
 
     uvicorn.run(
         "utils.starlette:app",

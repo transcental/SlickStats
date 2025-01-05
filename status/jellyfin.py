@@ -1,9 +1,20 @@
 import logging
+
 from utils.db import update_user_settings
 from utils.env import env
 
 
 async def get_playing(base_url: str, api_key: str) -> dict:
+    """Returns a JSON response with the currently playing media from Jellyfin
+
+    Keyword arguments:
+
+    base_url -- URL of the Jellyfin server (e.g. http://localhost:8096)
+
+    api_key -- API key for the Jellyfin server (e.g. 1234567890abcdef1234567890abcdef)
+
+    If there's an error executing the request it returns an empty dictionary.
+    """
     url = f"{base_url}/Sessions?active=true"
     try:
         async with env.aiohttp_session.get(
@@ -15,7 +26,13 @@ async def get_playing(base_url: str, api_key: str) -> dict:
         return {}
 
 
-async def get_jellyfin_status(user) -> tuple[str | None, str | None]:
+async def get_jellyfin_status(user: dict) -> tuple[str | None, str | None]:
+    """Returns a tuple with the current Jellyfin media and a log message if the media has changed. If the user has no settings, is not playing anything, the media isn't a Movie or Episode or the request errors, returns None, None
+
+    Keyword arguments:
+
+    user -- A dictionary with the user's settings
+    """
     if not user:
         return None, None
     base_url = user.get("jellyfin_url")

@@ -20,6 +20,8 @@ Services coming soon:
 ## Contributing
 Contributions are welcome! If you're working on a feature, please open an issue first and say you're working on it. If you're having trouble, you can [message me on Slack](https://hackclub.slack.com/app_redirect?channel="U054VC2KM9P") or open an issue.
 
+Make sure to install the pre-commit hooks by running `pre-commit install` after cloning the repo and installing the dependencies.
+
 ### Setup
 
 Create a Slack app from the [dashboard](https://api.slack.com/apps) with the following manifest (make sure to switch out the URL to yours)

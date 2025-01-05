@@ -1,6 +1,6 @@
-import aiohttp
 import os
 
+import aiohttp
 from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
 
@@ -10,7 +10,10 @@ load_dotenv()
 
 
 class Environment:
+    """Class to store environment variables and initialise necessary resources"""
+
     def __init__(self):
+        """Initialises the environment variables and sets up all the required environments for the app"""
         self.slack_app_token = os.environ.get("SLACK_APP_TOKEN", "unset")
         self.slack_client_id = os.environ.get("SLACK_CLIENT_ID", "unset")
         self.slack_client_secret = os.environ.get("SLACK_CLIENT_SECRET", "unset")
@@ -28,15 +31,17 @@ class Environment:
         if unset:
             raise ValueError(f"Missing environment variables: {', '.join(unset)}")
 
-        self.mongo_client = AsyncIOMotorClient(self.mongo_uri)
-        self.installation_store = MongoDBInstallationStore(self.mongo_client)
+        self.motor_client = AsyncIOMotorClient(self.mongo_uri)
+        self.installation_store = MongoDBInstallationStore(self.motor_client)
 
         self.aiohttp_session = None
 
     async def async_init(self):
+        """Initialises the aiohttp session"""
         self.aiohttp_session = aiohttp.ClientSession()
 
     async def async_close(self):
+        """Closes the aiohttp session"""
         if self.aiohttp_session:
             await self.aiohttp_session.close()
 

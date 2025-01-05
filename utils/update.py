@@ -1,35 +1,38 @@
-import asyncio, logging
+import asyncio
+import logging
+
 from utils.db import get_all_users
 from utils.env import env
-from utils.slack import (
-    log_to_slack,
-    app,
-    STATUSES,
-    update_slack_pfp,
-    update_slack_status,
-)
+from utils.slack import app
+from utils.slack import log_to_slack
+from utils.slack import STATUSES
+from utils.slack import update_slack_pfp
+from utils.slack import update_slack_status
 
 
 async def update_status(delay: int = 25):
-    """
-    Fetches the status of all users from all services and then updates Slack status and profile pictures accordingly every delay seconds
+    """Fetches the status of all users from all services and then updates Slack status and profile pictures accordingly every delay seconds
+
+    Keyword arguments:
+
+    delay -- The time in seconds between each status update (default 25)
     """
     while True:
         users = await get_all_users(enabled=True)
         if not users:
             return
-    
+
         for user in users:
             set = False
             if user.get("in_huddle", False):
                 continue
-    
+
             installation = await env.installation_store.async_find_installation(
                 user_id=user.get("user_id")
             )
             if not installation:
                 continue
-    
+
             bot_token = installation.bot_token or ""
             user_token = installation.user_token
             user_id = user.get("user_id")
@@ -58,16 +61,20 @@ async def update_status(delay: int = 25):
                     )
                     set = True
                 if log_message:
-                    slack_user = await app.client.users_info(user=user_id, token=bot_token)
+                    slack_user = await app.client.users_info(
+                        user=user_id, token=bot_token
+                    )
                     pfp = slack_user["user"]["profile"]["image_512"]
                     username = (
                         slack_user["user"]["profile"]["display_name"]
                         or slack_user["user"]["real_name"]
                         or slack_user["user"]["name"]
                     )
-                    await log_to_slack(log_message, bot_token, pfp=pfp, username=username)
+                    await log_to_slack(
+                        log_message, bot_token, pfp=pfp, username=username
+                    )
                     continue
-    
+
             if not set:
                 await update_slack_status(
                     emoji="", status="", user_id=user_id, token=user_token
@@ -80,5 +87,5 @@ async def update_status(delay: int = 25):
                     token=user_token,
                     img_url=user.get("default_pfp", None),
                 )
-    
+
         await asyncio.sleep(delay)

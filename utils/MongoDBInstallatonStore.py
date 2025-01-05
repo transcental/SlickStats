@@ -9,21 +9,34 @@ from slack_sdk.oauth.installation_store.models.installation import Installation
 
 
 class MongoDBInstallationStore(AsyncInstallationStore):
+    """A MongoDB-based InstallationStore implementation
+
+    This class is an implementation of the InstallationStore interface that uses MongoDB as a backend. It stores installation data in a collection called 'installations' in a database called 'slack'.
+    """
+
     def __init__(
         self,
-        mongo_client: AsyncIOMotorClient,
+        motor_client: AsyncIOMotorClient,
         db_name: str = "slack",
         collection_name: str = "installations",
     ):
-        self.mongo_client = mongo_client
-        self.db = mongo_client[db_name]
+        """Initialises the MongoDBInstallationStore
+
+        Keyword arguments:
+        motor_client -- The Montor client
+        db_name -- The name of the database (default 'slack')
+        collection_name -- The name of the collection (default 'installations')
+        """
+        self.motor_client = motor_client
+        self.db = motor_client[db_name]
         self.collection = self.db[collection_name]
 
     async def async_save(self, installation: Installation):
-        """
+        """Saves the installation data for a user to the database
 
-        :param installation: Installation:
+        Keyword arguments:
 
+        installation -- The installation data to be saved
         """
         data = installation.to_dict()
         await self.collection.update_one(
@@ -35,7 +48,7 @@ class MongoDBInstallationStore(AsyncInstallationStore):
             {"$set": data},
             upsert=True,
         )
-        db = self.mongo_client["slickstats"]
+        db = self.motor_client["slickstats"]
         users = db.users
         await users.update_one(
             {"user_id": installation.user_id},
@@ -48,15 +61,19 @@ class MongoDBInstallationStore(AsyncInstallationStore):
         *,
         enterprise_id: Optional[str] = None,
         team_id: Optional[str] = None,
-        is_enterprise_install: Optional[bool] = False
+        is_enterprise_install: Optional[bool] = False,
     ) -> Optional[Bot]:
-        """
+        """Finds the bot data for a given team or enterprise ID
 
-        :param *:
-        :param enterprise_id: Optional[str]:  (Default value = None)
-        :param team_id: Optional[str]:  (Default value = None)
-        :param is_enterprise_install: Optional[bool]:  (Default value = False)
+        Keyword arguments:
 
+        enterprise_id -- The enterprise ID (default None)
+
+        team_id -- The team ID (default None)
+
+        is_enterprise_install -- Whether the installation is for an enterprise (default False)
+
+        Returns the bot data if found, otherwise None
         """
         record = await self.collection.find_one(
             {
@@ -75,16 +92,21 @@ class MongoDBInstallationStore(AsyncInstallationStore):
         enterprise_id: Optional[str] = None,
         team_id: Optional[str] = None,
         user_id: Optional[str] = None,
-        is_enterprise_install: Optional[bool] = False
+        is_enterprise_install: Optional[bool] = False,
     ) -> Optional[Installation]:
-        """
+        """Finds the installation data for a given team, enterprise or user ID
 
-        :param *:
-        :param enterprise_id: Optional[str]:  (Default value = None)
-        :param team_id: Optional[str]:  (Default value = None)
-        :param user_id: Optional[str]:  (Default value = None)
-        :param is_enterprise_install: Optional[bool]:  (Default value = False)
+        Keyword arguments:
 
+        enterprise_id -- The enterprise ID (default None)
+
+        team_id -- The team ID (default None)
+
+        user_id -- The user ID (default None)
+
+        is_enterprise_install -- Whether the installation is for an enterprise (default False)
+
+        Returns the installation data if found, otherwise None
         """
         if user_id:
             record = await self.collection.find_one({"user_id": user_id})
@@ -99,13 +121,14 @@ class MongoDBInstallationStore(AsyncInstallationStore):
 
     async def async_delete_bot(
         self, *, enterprise_id: Optional[str] = None, team_id: Optional[str]
-    ) -> None:
-        """
+    ):
+        """Deletes the bot data for a given team or enterprise ID from the database
 
-        :param *:
-        :param enterprise_id: Optional[str]:  (Default value = None)
-        :param team_id: Optional[str]:
+        Keyword arguments:
 
+        enterprise_id -- The enterprise ID
+
+        team_id -- The team ID
         """
         await self.collection.update_one(
             {"enterprise_id": enterprise_id, "team_id": team_id},
@@ -117,14 +140,17 @@ class MongoDBInstallationStore(AsyncInstallationStore):
         *,
         enterprise_id: Optional[str] = None,
         team_id: Optional[str] = None,
-        user_id: Optional[str] = None
-    ) -> None:
-        """
+        user_id: Optional[str] = None,
+    ):
+        """Deletes the installation data for a given team, enterprise or user ID from the database
 
-        :param *:
-        :param enterprise_id: Optional[str]:  (Default value = None)
-        :param team_id: Optional[str]:  (Default value = None)
-        :param user_id: Optional[str]:  (Default value = None)
+        Keyword arguments:
+
+        enterprise_id -- The enterprise ID
+
+        team_id -- The team ID
+
+        user_id -- The user ID
 
         """
         if user_id:
@@ -134,17 +160,18 @@ class MongoDBInstallationStore(AsyncInstallationStore):
         else:
             query = {"enterprise_id": enterprise_id}
         await self.collection.delete_one(query)
-        await self.mongo_client["slickstats"].users.delete_one({"user_id": user_id})
+        await self.motor_client["slickstats"].users.delete_one({"user_id": user_id})
 
     async def async_find_installations(
         self, *, enterprise_id: Optional[str] = None, team_id: Optional[str] = None
-    ):
-        """
+    ) -> list[Installation]:
+        """Finds all installation data for a given team or enterprise ID from the database
 
-        :param *:
-        :param enterprise_id: Optional[str]:  (Default value = None)
-        :param team_id: Optional[str]:  (Default value = None)
+        Keyword arguments:
+        enterprise_id -- The enterprise ID
+        team_id -- The team ID
 
+        Returns a list of Installation objects if found, otherwise an empty list
         """
         query = {}
         if enterprise_id:

@@ -1,7 +1,9 @@
 aiohttp
+pre-commit
 python-dotenv
 motor
+reorder-python-imports
 slack-bolt
-uvicorn
-uvloop  
 starlette
+uvicorn 
+uvloop

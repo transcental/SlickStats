@@ -1,15 +1,16 @@
 import logging
+from io import BytesIO
+
 import requests
-from slack_bolt.async_app import AsyncApp, AsyncAck
+from slack_bolt.async_app import AsyncApp
 from slack_bolt.oauth.async_oauth_settings import AsyncOAuthSettings
 
 from status.jellyfin import get_jellyfin_status
 from status.lastfm import get_lastfm_status
 from status.steam import get_steam_status
-from utils.db import update_user_settings, get_user_settings
+from utils.db import get_user_settings
+from utils.db import update_user_settings
 from utils.env import env
-
-from io import BytesIO
 
 STATUSES = [
     {
@@ -84,14 +85,19 @@ app = AsyncApp(
 
 
 async def update_slack_status(emoji, status, user_id, token, expiry=0):
-    """
+    """Update the user's Slack status with the given emoji and status.
 
-    :param emoji:
-    :param status:
-    :param user_id:
-    :param token:
-    :param expiry:  (Default value = 0)
+    Keyword arguments:
 
+    emoji -- The emoji to set as the status.
+
+    status -- The status text.
+
+    user_id -- The user's Slack ID.
+
+    token -- The Slack API token.
+
+    expiry -- The time in seconds until the status expires (default 0).
     """
     current_status = await app.client.users_profile_get(user=user_id, token=token)
     if current_status.get("ok"):
@@ -146,14 +152,21 @@ async def update_slack_status(emoji, status, user_id, token, expiry=0):
 async def update_slack_pfp(
     new_pfp_type, user_id, current_pfp, bot_token, token, img_url
 ):
-    """
-    Update Slack profile picture if the new type is different from the current one and a valid image URL is provided.
+    """Update Slack profile picture if the new type is different from the current one and a valid image URL is provided.
 
-    :param new_pfp_type: The new profile picture type.
-    :param user_id: The Slack user ID.
-    :param current_pfp: The current profile picture type.
-    :param token: The Slack API token.
-    :param img_url: The URL of the new profile picture.
+    Keyword arguments:
+
+    new_pfp_type -- The new profile picture type.
+
+    user_id -- The user's Slack ID.
+
+    current_pfp -- The current profile picture type.
+
+    bot_token -- The bot's Slack API token.
+
+    token -- The user's Slack API token.
+
+    img_url -- The URL of the new profile picture.
     """
     if new_pfp_type != current_pfp and img_url:
         await update_user_settings(user_id, {"pfp": new_pfp_type})
@@ -187,8 +200,19 @@ async def log_to_slack(
     pfp: str | None = None,
     username: str | None = None,
 ):
-    """
-    Log a message to the #log channel. Wrapper around chat.postMessage.
+    """Log a message to the #log channel. Wrapper around chat.postMessage.
+
+    Keyword arguments:
+
+    message -- The message to log.
+
+    token -- The Slack API token.
+
+    channel_id -- The channel ID to post the message to (default env.slack_log_channel).
+
+    pfp -- The profile picture URL of the user posting the message.
+
+    username -- The username of the user posting the message.
     """
     await app.client.chat_postMessage(
         channel=channel_id,
