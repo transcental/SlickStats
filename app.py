@@ -1,11 +1,11 @@
 import asyncio
 import contextlib
 import logging
-from starlette.applications import Starlette
 import uvicorn
 from slack_bolt.adapter.socket_mode.async_handler import AsyncSocketModeHandler
 from slack_sdk.web.async_client import AsyncWebClient
 from slack_bolt.async_app import AsyncAck
+from starlette.applications import Starlette
 from utils.db import get_user_settings, update_user_settings
 from utils.env import env
 from utils.slack import app, update_slack_pfp, update_slack_status
@@ -255,4 +255,3 @@ if __name__ == "__main__":
         port=env.port,
         log_level="info" if env.environment != "production" else "warning",
     )
-    asyncio.run(main())
