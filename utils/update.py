@@ -10,12 +10,12 @@ from utils.slack import update_slack_pfp
 from utils.slack import update_slack_status
 
 
-async def update_status(delay: int = 25):
+async def update_status(delay: int = 10):
     """Fetches the status of all users from all services and then updates Slack status and profile pictures accordingly every delay seconds
 
     Keyword arguments:
 
-    delay -- The time in seconds between each status update (default 25)
+    delay -- The time in seconds between each status update (default 10)
     """
     while True:
         users = await get_all_users(enabled=True)

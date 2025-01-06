@@ -232,7 +232,7 @@ async def main(_app: Starlette):
     await env.motor_client.admin.command("ping")
     logging.info("Connected to MongoDB")
 
-    asyncio.create_task(update_status(25))
+    asyncio.create_task(update_status())
 
     handler = AsyncSocketModeHandler(app, env.slack_app_token)
     logging.info("Starting Socket Mode handler")
