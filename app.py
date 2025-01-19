@@ -3,7 +3,6 @@ import contextlib
 import logging
 
 import uvicorn
-from slack_bolt.adapter.socket_mode.async_handler import AsyncSocketModeHandler
 from slack_bolt.async_app import AsyncAck
 from slack_sdk.web.async_client import AsyncWebClient
 from starlette.applications import Starlette
@@ -234,14 +233,11 @@ async def main(_app: Starlette):
 
     asyncio.create_task(update_status())
 
-    handler = AsyncSocketModeHandler(app, env.slack_app_token)
-    logging.info("Starting Socket Mode handler")
-    await handler.connect_async()
     logging.info(f"Starting Uvicorn app on port {env.port}")
 
     yield
     logging.info("Closing Socket Mode handler")
-    await handler.close_async()
+    await env.async_close()
 
 
 if __name__ == "__main__":

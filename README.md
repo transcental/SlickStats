@@ -29,25 +29,25 @@ Create a Slack app from the [dashboard](https://api.slack.com/apps) with the fol
 ```json
 {
     "display_information": {
-        "name": "Slick Stats",
-        "description": "Update your status to show what you're doing across other services!",
-        "background_color": "#5c235c",
-        "long_description": "Slick Stats automatically updates your status to show what you're doing on other services throughout a variety of APIs.\r\n\r\nCurrently supported:\r\nLast.fm, Steam, Jellyfin, Slack Huddles\r\n\r\nComing soon:\r\nNintendo Switch, ListenBrainz\r\n\r\nGot a request? Submit an issue at https://github.com/transcental/SlickStats!"
+        "name": "Slick Stats Dev",
+        "description": "Development version of @Slick Stats",
+        "background_color": "#2b592a",
+        "long_description": "Woah, hey I'm the dev version of @Slick Stats. I really don't think you should mess around with me, it could break your @Slick Stats experience which you really don't want do you?"
     },
     "features": {
         "app_home": {
             "home_tab_enabled": true,
-            "messages_tab_enabled": false,
+            "messages_tab_enabled": true,
             "messages_tab_read_only_enabled": false
         },
         "bot_user": {
-            "display_name": "Slick Stats",
+            "display_name": "Slick Stats Dev",
             "always_online": true
         }
     },
     "oauth_config": {
         "redirect_urls": [
-            "URL/slack/oauth_redirect"
+            "https://URL/slack/oauth_redirect"
         ],
         "scopes": {
             "user": [
@@ -57,18 +57,20 @@ Create a Slack app from the [dashboard](https://api.slack.com/apps) with the fol
             ],
             "bot": [
                 "chat:write",
-                "chat:write.customize",
+                "chat:write.public",
                 "commands",
+                "emoji:read",
                 "im:history",
                 "team:read",
                 "users.profile:read",
                 "users:read",
-                "emoji:read"
+                "chat:write.customize"
             ]
         }
     },
     "settings": {
         "event_subscriptions": {
+            "request_url": "URL/slack/events",
             "bot_events": [
                 "app_home_opened",
                 "message.im",
@@ -76,10 +78,12 @@ Create a Slack app from the [dashboard](https://api.slack.com/apps) with the fol
             ]
         },
         "interactivity": {
-            "is_enabled": true
+            "is_enabled": true,
+            "request_url": "URL/slack/events",
+            "message_menu_options_url": "URL/slack/events"
         },
         "org_deploy_enabled": false,
-        "socket_mode_enabled": true,
+        "socket_mode_enabled": false,
         "token_rotation_enabled": false
     }
 }
@@ -88,7 +92,6 @@ Create a Slack app from the [dashboard](https://api.slack.com/apps) with the fol
 After cloning the repo, you will need to add a `.env` file with the following variables. You can get copy `.env.example` and fill in the values.
 
 - Required
-  - `SLACK_APP_TOKEN` - The app token for your Slack app for connecting via Socket mode
   - `SLACK_CLIENT_SECRET` - The client secret for your Slack app
   - `SLACK_SIGNING_SECRET` - The signing secret for your Slack app
   - `SLACK_LOG_CHANNEL` - The ID of the channel to log all status changes to

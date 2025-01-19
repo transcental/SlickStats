@@ -14,7 +14,6 @@ class Environment:
 
     def __init__(self):
         """Initialises the environment variables and sets up all the required environments for the app"""
-        self.slack_app_token = os.environ.get("SLACK_APP_TOKEN", "unset")
         self.slack_client_id = os.environ.get("SLACK_CLIENT_ID", "unset")
         self.slack_client_secret = os.environ.get("SLACK_CLIENT_SECRET", "unset")
         self.slack_signing_secret = os.environ.get("SLACK_SIGNING_SECRET", "unset")
