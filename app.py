@@ -11,6 +11,7 @@ from utils.db import get_user_settings
 from utils.db import update_user_settings
 from utils.env import env
 from utils.slack import app
+from utils.slack import check_token
 from utils.slack import update_slack_pfp
 from utils.slack import update_slack_status
 from utils.update import update_status
@@ -184,6 +185,17 @@ async def huddle_changed(event):
     )
     if not installation:
         return
+
+    if not await check_token(installation.user_token or ""):
+        try:
+            await app.client.chat_postMessage(
+                channel=user.get("user_id"),
+                text="Your token is invalid. Please reauthenticate with the app via the red button at the bottom of the app home.",
+                token=installation.bot_token,
+            )
+        finally:
+            logging.error(f"User {user.get('user_id')} has an invalid token. Skipping.")
+            return
 
     match in_huddle:
         case "in_a_huddle":

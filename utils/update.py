@@ -4,6 +4,7 @@ import logging
 from utils.db import get_all_users
 from utils.env import env
 from utils.slack import app
+from utils.slack import check_token
 from utils.slack import log_to_slack
 from utils.slack import STATUSES
 from utils.slack import update_slack_pfp
@@ -34,8 +35,22 @@ async def update_status(delay: int = 10):
                 continue
 
             bot_token = installation.bot_token or ""
-            user_token = installation.user_token
+            user_token = installation.user_token or ""
             user_id = user.get("user_id")
+
+            if not await check_token(user_token):
+                try:
+                    await app.client.chat_postMessage(
+                        channel=user.get("user_id"),
+                        text="Your token is invalid. Please reauthenticate with the app via the red button at the bottom of the app home.",
+                        token=installation.bot_token,
+                    )
+                finally:
+                    logging.error(
+                        f"User {user.get('user_id')} has an invalid token. Skipping."
+                    )
+                    continue
+
             current_pfp = user.get("pfp")
             for status in STATUSES:
                 custom, log_message = await status.get(

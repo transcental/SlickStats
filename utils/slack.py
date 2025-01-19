@@ -84,6 +84,13 @@ app = AsyncApp(
 # await log_to_slack(f"Fetching current status for {user.get('user_id')}\nCurrently listening to {user.get('current_song')}\nCurrently playing {user.get('current_game')}\nCurrently watching: {user.get('current_jellyfin')}", token, channel_id)
 
 
+async def check_token(token: str) -> bool:
+    """Checks if the given token is valid."""
+
+    res = await app.client.auth_test(token=token)
+    return res.get("ok", False)
+
+
 async def update_slack_status(emoji, status, user_id, token, expiry=0):
     """Update the user's Slack status with the given emoji and status.
 
