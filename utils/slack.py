@@ -4,6 +4,7 @@ from io import BytesIO
 import requests
 from slack_bolt.async_app import AsyncApp
 from slack_bolt.oauth.async_oauth_settings import AsyncOAuthSettings
+from slack_sdk.errors import SlackApiError
 
 from status.jellyfin import get_jellyfin_status
 from status.lastfm import get_lastfm_status
@@ -86,9 +87,11 @@ app = AsyncApp(
 
 async def check_token(token: str) -> bool:
     """Checks if the given token is valid."""
-
-    res = await app.client.auth_test(token=token)
-    return res.get("ok", False)
+    try:
+        await app.client.auth_test(token=token)
+        return True
+    except SlackApiError:
+        return False
 
 
 async def update_slack_status(emoji, status, user_id, token, expiry=0):
