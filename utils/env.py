@@ -1,6 +1,5 @@
 import os
 
-import aiohttp
 from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
 
@@ -32,17 +31,6 @@ class Environment:
 
         self.motor_client = AsyncIOMotorClient(self.mongo_uri)
         self.installation_store = MongoDBInstallationStore(self.motor_client)
-
-        self.aiohttp_session = None
-
-    async def async_init(self):
-        """Initialises the aiohttp session"""
-        self.aiohttp_session = aiohttp.ClientSession()
-
-    async def async_close(self):
-        """Closes the aiohttp session"""
-        if self.aiohttp_session:
-            await self.aiohttp_session.close()
 
 
 env = Environment()

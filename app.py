@@ -239,7 +239,6 @@ async def huddle_changed(event):
 @contextlib.asynccontextmanager
 async def main(_app: Starlette):
     """Runs the app and connects to the Slack API and MongoDB"""
-    await env.async_init()
     await env.motor_client.admin.command("ping")
     logging.info("Connected to MongoDB")
 

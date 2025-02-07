@@ -1,7 +1,8 @@
 import logging
 
+import aiohttp
+
 from utils.db import update_user_settings
-from utils.env import env
 
 BASE_URL = "https://api.steampowered.com"
 
@@ -19,7 +20,7 @@ async def get_playing(api_key: str, user_id: str) -> dict | None:
     """
     url = f"{BASE_URL}/ISteamUser/GetPlayerSummaries/v2/?key={api_key}&format=json&steamids={user_id}"
     try:
-        async with env.aiohttp_session.get(url) as res:
+        async with aiohttp.ClientSession().get(url) as res:
             return await res.json()
     except Exception as e:
         logging.error(e)

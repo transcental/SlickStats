@@ -1,7 +1,8 @@
 import logging
 
+import aiohttp
+
 from utils.db import update_user_settings
-from utils.env import env
 
 
 async def get_playing(base_url: str, api_key: str) -> dict:
@@ -17,7 +18,7 @@ async def get_playing(base_url: str, api_key: str) -> dict:
     """
     url = f"{base_url}/Sessions?active=true"
     try:
-        async with env.aiohttp_session.get(
+        async with aiohttp.ClientSession().get(
             url, headers={"X-Emby-Token": api_key}
         ) as res:
             return await res.json()
