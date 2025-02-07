@@ -248,7 +248,6 @@ async def main(_app: Starlette):
 
     yield
     logging.info("Closing Socket Mode handler")
-    await env.async_close()
 
 
 if __name__ == "__main__":
