@@ -18,10 +18,9 @@ async def get_playing(base_url: str, api_key: str) -> dict:
     """
     url = f"{base_url}/Sessions?active=true"
     try:
-        async with aiohttp.ClientSession().get(
-            url, headers={"X-Emby-Token": api_key}
-        ) as res:
-            return await res.json()
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, headers={"X-Emby-Token": api_key}) as res:
+                return await res.json()
     except Exception as e:
         logging.error(e)
         return {}

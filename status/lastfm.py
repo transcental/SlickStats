@@ -20,8 +20,9 @@ async def get_playing(api_key: str, username: str) -> dict | None:
     """
     url = f"{BASE_URL}?method=user.getrecenttracks&api_key={api_key}&format=json&user={username}"
     try:
-        async with aiohttp.ClientSession().get(url) as res:
-            return await res.json()
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as res:
+                return await res.json()
     except Exception as e:
         logging.error(e)
         return None
