@@ -14,7 +14,7 @@ from utils.slack import app
 from utils.slack import check_token
 from utils.slack import update_slack_pfp
 from utils.slack import update_slack_status
-from utils.update import update_status
+from utils.update import run_updater
 from utils.views import generate_home_view
 
 logging.basicConfig(
@@ -242,7 +242,7 @@ async def main(_app: Starlette):
     await env.motor_client.admin.command("ping")
     logging.info("Connected to MongoDB")
 
-    asyncio.create_task(update_status())
+    asyncio.create_task(run_updater())
 
     logging.info(f"Starting Uvicorn app on port {env.port}")
 
