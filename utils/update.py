@@ -57,7 +57,7 @@ async def update_status(delay: int = 10):
             custom, log_message = await status.get(
                 "function",
                 lambda _: logging.error(
-                    f'Failed to run status fetching function for {status.get("name")}'
+                    f"Failed to run status fetching function for {status.get('name')}"
                 ),
             )(user)
             if custom:

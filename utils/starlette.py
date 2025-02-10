@@ -29,5 +29,5 @@ app = Starlette(
         Route(path="/slack/install", endpoint=install, methods=["GET"]),
         Route(path="/slack/oauth_redirect", endpoint=oauth_redirect, methods=["GET"]),
     ],
-    lifespan=main
+    lifespan=main,
 )
