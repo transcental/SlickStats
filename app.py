@@ -200,7 +200,6 @@ async def huddle_changed(event):
     match in_huddle:
         case "in_a_huddle":
             if user.get("pfp") != "huddle_pfp":
-                await update_user_settings(event["user"]["id"], {"in_huddle": True})
                 await update_slack_pfp(
                     new_pfp_type="huddle_pfp",
                     user_id=event["user"]["id"],
@@ -210,6 +209,7 @@ async def huddle_changed(event):
                     img_url=user.get("huddle_pfp", None),
                 )
                 if user.get("huddle_emoji", ":headphones:") != ":headphones:":
+                    await update_user_settings(event["user"]["id"], {"in_huddle": True})
                     await update_slack_status(
                         emoji="huddle_emoji",
                         status="In a huddle",
