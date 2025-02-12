@@ -1,4 +1,5 @@
 import logging
+import traceback
 from io import BytesIO
 
 import requests
@@ -195,9 +196,10 @@ async def update_slack_pfp(
             await app.client.users_setPhoto(image=content, token=token)
         except Exception as e:
             # Log the exception or notify the user
+            exception_details = f"Exception type: {type(e).__name__}, Arguments: {e.args}, Traceback: {traceback.format_exc()}"
             await app.client.chat_postMessage(
                 channel=user_id,
-                text=f"An error occurred while updating the profile picture: {str(e)}",
+                text=f"An error occurred while updating the profile picture: {exception_details}",
                 token=bot_token,
             )
     return
