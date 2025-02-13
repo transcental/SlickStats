@@ -7,3 +7,4 @@ slack-bolt
 starlette
 uvicorn 
 uvloop
+requests
