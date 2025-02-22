@@ -11,7 +11,7 @@ from utils.slack import update_slack_pfp
 from utils.slack import update_slack_status
 
 
-async def run_updater(delay: int = 30):
+async def run_updater(delay: int = 35):
     """Runs the updater every `delay` seconds"""
     while True:
         asyncio.create_task(update_status())
