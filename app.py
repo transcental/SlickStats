@@ -209,6 +209,7 @@ async def huddle_changed(event):
                 channel=env.slack_log_channel,
                 text=f"{display} joined a huddle",
                 icon_url=user_info["user"]["profile"]["image_512"],
+                username=display,
             )
             if user.get("pfp") != "huddle_pfp":
                 await update_slack_pfp(
@@ -232,9 +233,10 @@ async def huddle_changed(event):
                 channel=env.slack_log_channel,
                 text=f"{display} left a huddle",
                 icon_url=user_info["user"]["profile"]["image_512"],
+                username=display,
             )
+            await update_user_settings(event["user"]["id"], {"in_huddle": False})
             if user.get("pfp") == "huddle_pfp":
-                await update_user_settings(event["user"]["id"], {"in_huddle": False})
                 await update_slack_pfp(
                     new_pfp_type="default_pfp",
                     user_id=event["user"]["id"],
@@ -243,13 +245,13 @@ async def huddle_changed(event):
                     current_pfp=user.get("pfp"),
                     img_url=user.get("default_pfp", None),
                 )
-                if user.get("huddle_emoji", ":headphones:") != ":headphones:":
-                    await update_slack_status(
-                        emoji="",
-                        status="",
-                        user_id=event["user"]["id"],
-                        token=installation.user_token,
-                    )
+            if user.get("huddle_emoji", ":headphones:") != ":headphones:":
+                await update_slack_status(
+                    emoji="",
+                    status="",
+                    user_id=event["user"]["id"],
+                    token=installation.user_token,
+                )
 
 
 @contextlib.asynccontextmanager
