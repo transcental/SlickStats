@@ -197,7 +197,7 @@ async def huddle_changed(event):
             logging.error(f"User {user.get('user_id')} has an invalid token. Skipping.")
             return
 
-    user_info = await app.client.users_info(user=event["user"]["id"])
+    user_info = await env.slack_client.users_info(user=event["user"]["id"])
     display = (
         user_info["user"]["profile"]["display_name"]
         or user_info["user"]["profile"]["real_name"]
