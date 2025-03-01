@@ -2,6 +2,7 @@ import os
 
 from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
+from slack_sdk.web.async_client import AsyncWebClient
 
 from utils.MongoDBInstallatonStore import MongoDBInstallationStore
 
@@ -16,7 +17,11 @@ class Environment:
         self.slack_client_id = os.environ.get("SLACK_CLIENT_ID", "unset")
         self.slack_client_secret = os.environ.get("SLACK_CLIENT_SECRET", "unset")
         self.slack_signing_secret = os.environ.get("SLACK_SIGNING_SECRET", "unset")
+        self.slack_token = os.environ.get("SLACK_TOKEN", "unset")
 
+        self.slack_heartbeat_channel = os.environ.get(
+            "SLACK_HEARTBEAT_CHANNEL", "unset"
+        )
         self.slack_log_channel = os.environ.get("SLACK_LOG_CHANNEL", "unset")
 
         self.mongo_uri = os.environ.get("MONGO_URI", "unset")
@@ -31,6 +36,8 @@ class Environment:
 
         self.motor_client = AsyncIOMotorClient(self.mongo_uri)
         self.installation_store = MongoDBInstallationStore(self.motor_client)
+
+        self.slack_client = AsyncWebClient(token=self.slack_token)
 
 
 env = Environment()
