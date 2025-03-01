@@ -197,8 +197,19 @@ async def huddle_changed(event):
             logging.error(f"User {user.get('user_id')} has an invalid token. Skipping.")
             return
 
+    user_info = await app.client.users_info(user=event["user"]["id"])
+    display = (
+        user_info["user"]["profile"]["display_name"]
+        or user_info["user"]["profile"]["real_name"]
+        or user_info["user"]["name"]
+    )
     match in_huddle:
         case "in_a_huddle":
+            await env.slack_client.chat_postMessage(
+                channel=env.slack_log_channel,
+                message=f"{display} joined a huddle",
+                icon_url=user_info["user"]["profile"]["image_512"],
+            )
             if user.get("pfp") != "huddle_pfp":
                 await update_slack_pfp(
                     new_pfp_type="huddle_pfp",
@@ -217,6 +228,11 @@ async def huddle_changed(event):
                         token=installation.user_token,
                     )
         case "default_unset" | None:
+            await env.slack_client.chat_postMessage(
+                channel=env.slack_log_channel,
+                message=f"{display} left a huddle",
+                icon_url=user_info["user"]["profile"]["image_512"],
+            )
             if user.get("pfp") == "huddle_pfp":
                 await update_user_settings(event["user"]["id"], {"in_huddle": False})
                 await update_slack_pfp(
