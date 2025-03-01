@@ -147,14 +147,8 @@ async def toggle_enabled(ack: AsyncAck, body):
 async def emojis_data_source_handler(ack: AsyncAck, body):
     """Returns a list of emojis for the user to choose from"""
     keyword = body.get("value")
-    installation = await env.installation_store.async_find_installation(
-        user_id=body["user"]["id"]
-    )
-    if not installation:
-        await ack()
-        return
 
-    emojis_info = await app.client.emoji_list(token=installation.bot_token)
+    emojis_info = await env.slack_client.emoji_list()
     emojis = emojis_info.get("emoji", [])
 
     options = [
