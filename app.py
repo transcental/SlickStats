@@ -207,7 +207,7 @@ async def huddle_changed(event):
         case "in_a_huddle":
             await env.slack_client.chat_postMessage(
                 channel=env.slack_log_channel,
-                message=f"{display} joined a huddle",
+                text=f"{display} joined a huddle",
                 icon_url=user_info["user"]["profile"]["image_512"],
             )
             if user.get("pfp") != "huddle_pfp":
@@ -230,7 +230,7 @@ async def huddle_changed(event):
         case "default_unset" | None:
             await env.slack_client.chat_postMessage(
                 channel=env.slack_log_channel,
-                message=f"{display} left a huddle",
+                text=f"{display} left a huddle",
                 icon_url=user_info["user"]["profile"]["image_512"],
             )
             if user.get("pfp") == "huddle_pfp":
