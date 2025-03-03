@@ -167,8 +167,9 @@ async def emojis_data_source_handler(ack: AsyncAck, body):
 
 
 @app.event("user_huddle_changed")
-async def huddle_changed(event):
+async def huddle_changed(event, ack: AsyncAck):
     """Updates the user's Slack status and profile picture when they enter or leave a huddle"""
+    await ack()
     in_huddle = event.get("user", {}).get("profile", {}).get("huddle_state", None)
 
     user_info = await env.slack_client.users_info(user=event["user"]["id"])
