@@ -175,7 +175,6 @@ async def huddle_changed(event, ack: AsyncAck):
     if event.get("event_ts") in huddles_acknowledged:
         return
 
-    logging.info(event)
     huddles_acknowledged.append(event.get("event_ts"))
     in_huddle = event.get("user", {}).get("profile", {}).get("huddle_state", None)
 
