@@ -56,17 +56,8 @@ async def update_home_tab(client: AsyncWebClient, event, logger):
             "user_id": event["user"]
         }
 
-        team_info = await client.team_info()
-        team_id = team_info["team"]["id"]
-        installations = await env.installation_store.async_find_installations(
-            team_id=team_id
-        )
-        if not installations:
-            return
-        installation = installations[0]
-        token = installation.bot_token
-        await client.views_publish(
-            user_id=event["user"], token=token, view=get_home(user_data)
+        await env.slack_client.views_publish(
+            user_id=event["user"], view=get_home(user_data)
         )
     except Exception as e:
         logger.error(f"Error publishing home tab: {e}")
