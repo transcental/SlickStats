@@ -141,7 +141,7 @@ async def update_slack_status(emoji, status, user_id, token, expiry=0):
     if (
         status_emoji in emojis
         or status_emoji == ""
-        or re.search(HACKATIME_REGEX, current_status_text)
+        or (re.search(HACKATIME_REGEX, current_status_text) and status != "")
     ):
         if current_status_text == status:
             return
