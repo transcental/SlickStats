@@ -1,6 +1,7 @@
 import asyncio
 import contextlib
 import logging
+import subprocess
 
 import uvicorn
 from slack_bolt.async_app import AsyncAck
@@ -31,11 +32,13 @@ def get_home(user_data: dict) -> dict:
         lastfm_api_key=user_data.get("lastfm_api_key", None),
         steam_id=user_data.get("steam_id", None),
         steam_api_key=user_data.get("steam_api_key", None),
+        switch_friend_code=user_data.get("switch_friend_code", None),
         jellyfin_url=user_data.get("jellyfin_url", None),
         jellyfin_api_key=user_data.get("jellyfin_api_key", None),
         jellyfin_username=user_data.get("jellyfin_username", None),
         music_emoji=user_data.get("music_emoji", ":musical_note:"),
         gaming_emoji=user_data.get("gaming_emoji", ":video_game:"),
+        switch_emoji=user_data.get("switch_emoji", ":nintendo-switch:"),
         film_emoji=user_data.get("film_emoji", ":tv:"),
         huddle_emoji=user_data.get("huddle_emoji", ":headphones:"),
         default_pfp=user_data.get("default_pfp", None),
@@ -43,6 +46,7 @@ def get_home(user_data: dict) -> dict:
         music_pfp=user_data.get("music_pfp", None),
         film_pfp=user_data.get("film_pfp", None),
         gaming_pfp=user_data.get("gaming_pfp", None),
+        switch_pfp=user_data.get("switch_pfp", None),
         user_exists=bool(user_data),
         enabled=user_data.get("enabled", True),
     )
@@ -79,6 +83,7 @@ async def submit_settings(ack: AsyncAck, body):
         "lastfm_api_key",
         "steam_id",
         "steam_api_key",
+        "switch_friend_code",
         "jellyfin_url",
         "jellyfin_api_key",
         "jellyfin_username",
@@ -87,8 +92,10 @@ async def submit_settings(ack: AsyncAck, body):
         "music_pfp",
         "film_pfp",
         "gaming_pfp",
+        "switch_pfp",
         "music_emoji",
         "gaming_emoji",
+        "switch_emoji",
         "film_emoji",
         "huddle_emoji",
     ]
@@ -272,6 +279,16 @@ if __name__ == "__main__":
         asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     except ImportError:
         pass
+
+    res = subprocess.run(
+        ["bun", "i"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    if res.returncode != 0:
+        logging.error("Failed to install bun packages")
+        exit(1)
 
     uvicorn.run(
         "utils.starlette:app",

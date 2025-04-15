@@ -1,6 +1,7 @@
 def generate_home_view(
     lastfm_username: str | None,
     lastfm_api_key: str | None,
+    switch_friend_code: str | None,
     steam_id: str | None,
     steam_api_key: str | None,
     jellyfin_url: str | None,
@@ -10,11 +11,13 @@ def generate_home_view(
     gaming_emoji: str,
     film_emoji: str,
     huddle_emoji: str,
+    switch_emoji: str,
     default_pfp: str | None,
     music_pfp: str | None,
     film_pfp: str | None,
     huddle_pfp: str | None,
     gaming_pfp: str | None,
+    switch_pfp: str | None,
     user_exists: bool,
     enabled: bool,
 ) -> dict:
@@ -185,6 +188,30 @@ def generate_home_view(
             {"type": "divider"},
             {
                 "type": "input",
+                "block_id": "switch_friend_code",
+                "element": {
+                    "type": "plain_text_input",
+                    "action_id": "steam_id",
+                    "initial_value": switch_friend_code if switch_friend_code else "",
+                },
+                "label": {
+                    "type": "plain_text",
+                    "text": "Nintendo Switch Friend Code",
+                    "emoji": False,
+                },
+            },
+            {
+                "type": "context",
+                "elements": [
+                    {
+                        "type": "mrkdwn",
+                        "text": "_Get this from your profile menu on Nintendo Switch, or in the Nintendo Switch app_",
+                    }
+                ],
+            },
+            {"type": "divider"},
+            {
+                "type": "input",
                 "block_id": "jellyfin_url",
                 "element": {
                     "type": "plain_text_input",
@@ -316,6 +343,37 @@ def generate_home_view(
                     {
                         "type": "mrkdwn",
                         "text": "_This will be your status emoji when playing a game_",
+                    }
+                ],
+            },
+            {
+                "type": "input",
+                "block_id": "switch_emoji",
+                "element": {
+                    "action_id": "emojis",
+                    "type": "external_select",
+                    "placeholder": {"type": "plain_text", "text": "Choose an emoji"},
+                    "initial_option": {
+                        "text": {
+                            "type": "plain_text",
+                            "text": f"{switch_emoji} {switch_emoji.replace(':', '')}",
+                        },
+                        "value": switch_emoji,
+                    },
+                    "min_query_length": 0,
+                },
+                "label": {
+                    "type": "plain_text",
+                    "text": "Nintendo Switch Emoji",
+                    "emoji": False,
+                },
+            },
+            {
+                "type": "context",
+                "elements": [
+                    {
+                        "type": "mrkdwn",
+                        "text": "_This will be your status emoji when playing a Nintendo Switch game_",
                     }
                 ],
             },
@@ -493,6 +551,29 @@ def generate_home_view(
                     {
                         "type": "mrkdwn",
                         "text": "_Set this to an image URL if you want your PFP to change when playing a game_",
+                    }
+                ],
+            },
+            {
+                "type": "input",
+                "block_id": "switch_pfp",
+                "element": {
+                    "type": "plain_text_input",
+                    "action_id": "switch_pfp",
+                    "initial_value": switch_pfp if switch_pfp else "",
+                },
+                "label": {
+                    "type": "plain_text",
+                    "text": "Nintendo Switch PFP",
+                    "emoji": False,
+                },
+            },
+            {
+                "type": "context",
+                "elements": [
+                    {
+                        "type": "mrkdwn",
+                        "text": "_Set this to an image URL if you want your PFP to change when playing a Nintendo Switch game_",
                     }
                 ],
             },

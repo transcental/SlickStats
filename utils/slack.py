@@ -11,11 +11,20 @@ from slack_sdk.errors import SlackApiError
 from status.jellyfin import get_jellyfin_status
 from status.lastfm import get_lastfm_status
 from status.steam import get_steam_status
+from status.switch import get_switch_status
 from utils.db import get_user_settings
 from utils.db import update_user_settings
 from utils.env import env
 
 STATUSES = [
+    {
+        "name": "Switch",
+        "emoji": "switch_emoji",
+        "default_emoji": ":nintendo-switch:",
+        "status": "Playing (custom) on Switch",
+        "pfp": "switch_pfp",
+        "function": get_switch_status,
+    },
     {
         "name": "Steam",
         "emoji": "gaming_emoji",
