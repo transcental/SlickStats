@@ -40,5 +40,7 @@ class Environment:
 
         self.slack_client = AsyncWebClient(token=self.slack_token)
 
+        self.git_hash = os.system("git rev-parse --short HEAD")
+
 
 env = Environment()

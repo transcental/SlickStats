@@ -260,7 +260,7 @@ async def app_uninstalled(event, ack: AsyncAck):
     async with aiohttp.ClientSession() as session:
         async with session.post(
             env.slack_webhook_url,
-            json={"status": "down", "reason": "App uninstalled"},
+            json={"status": "down", "reason": "App uninstalled", "hash": env.git_hash},
         ):
             logging.error(f"User {event['user']['id']} uninstalled the app")
             exit()
@@ -275,9 +275,11 @@ async def main(_app: Starlette):
     asyncio.create_task(run_updater())
 
     logging.info(f"Starting Uvicorn app on port {env.port}")
+
     async with aiohttp.ClientSession() as session:
         async with session.post(
-            env.slack_webhook_url, data={"status": "up", "reason": "App started"}
+            env.slack_webhook_url,
+            json={"status": "up", "reason": "App started", "hash": env.git_hash},
         ) as resp:
             if resp.status != 200:
                 logging.error(f"Failed to send status update: {resp.status}")
