@@ -1,4 +1,5 @@
 import os
+import subprocess
 
 from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -40,7 +41,9 @@ class Environment:
 
         self.slack_client = AsyncWebClient(token=self.slack_token)
 
-        self.git_hash = os.system("git rev-parse --short HEAD")
+        self.git_hash = subprocess.check_output(
+            ["git", "rev-parse", "--short", "HEAD"], stderr=subprocess.STDOUT
+        )
 
 
 env = Environment()
