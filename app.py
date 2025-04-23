@@ -276,8 +276,8 @@ async def main(_app: Starlette):
 
     logging.info(f"Starting Uvicorn app on port {env.port}")
     async with aiohttp.ClientSession() as session:
-        async with session.get(
-            env.slack_webhook_url, json={"status": "up", "reason": "App started"}
+        async with session.post(
+            env.slack_webhook_url, data={"status": "up", "reason": "App started"}
         ) as resp:
             if resp.status != 200:
                 logging.error(f"Failed to send status update: {resp.status}")
