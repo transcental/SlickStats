@@ -1,13 +1,23 @@
 import os
-import subprocess
 
 from dotenv import load_dotenv
+from git import Repo
 from motor.motor_asyncio import AsyncIOMotorClient
 from slack_sdk.web.async_client import AsyncWebClient
 
 from utils.MongoDBInstallatonStore import MongoDBInstallationStore
 
 load_dotenv()
+
+
+def get_git_hash(repo_path="."):
+    try:
+        repo = Repo(repo_path)
+        commit_hash = repo.head.commit.hexsha
+        return commit_hash[:7]
+    except Exception as e:
+        print(f"Error getting git hash: {e}")
+        return None
 
 
 class Environment:
@@ -41,9 +51,7 @@ class Environment:
 
         self.slack_client = AsyncWebClient(token=self.slack_token)
 
-        self.git_hash = subprocess.check_output(
-            ["git", "rev-parse", "--short", "HEAD"], stderr=subprocess.STDOUT
-        )
+        self.git_hash = get_git_hash()
 
 
 env = Environment()
