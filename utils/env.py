@@ -23,6 +23,7 @@ class Environment:
             "SLACK_HEARTBEAT_CHANNEL", "unset"
         )
         self.slack_log_channel = os.environ.get("SLACK_LOG_CHANNEL", "unset")
+        self.slack_webhook_url = os.environ.get("SLACK_WEBHOOK_URL", "unset")
 
         self.mongo_uri = os.environ.get("MONGO_URI", "unset")
 

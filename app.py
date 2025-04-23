@@ -2,6 +2,7 @@ import asyncio
 import contextlib
 import logging
 
+import aiohttp
 import uvicorn
 from slack_bolt.async_app import AsyncAck
 from slack_sdk.web.async_client import AsyncWebClient
@@ -251,6 +252,20 @@ async def huddle_changed(event, ack: AsyncAck):
                 )
 
 
+@app.event("app_uninstalled")
+async def app_uninstalled(event, ack: AsyncAck):
+    """The app has been uninstalled from the workspace, send a status update"""
+    await ack()
+
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+            env.slack_webhook_url,
+            json={"status": "down", "reason": "App uninstalled"},
+        ):
+            logging.error(f"User {event['user']['id']} uninstalled the app")
+            exit()
+
+
 @contextlib.asynccontextmanager
 async def main(_app: Starlette):
     """Runs the app and connects to the Slack API and MongoDB"""
@@ -260,6 +275,13 @@ async def main(_app: Starlette):
     asyncio.create_task(run_updater())
 
     logging.info(f"Starting Uvicorn app on port {env.port}")
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+            env.slack_webhook_url, json={"status": "up", "reason": "App started"}
+        ) as resp:
+            if resp.status != 200:
+                logging.error(f"Failed to send status update: {resp.status}")
+            logging.info("Connected to Slack API")
 
     yield
     logging.info("Closing Socket Mode handler")
