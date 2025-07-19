@@ -1,3 +1,6 @@
+from utils.env import env
+
+
 def generate_home_view(
     lastfm_username: str | None,
     lastfm_api_key: str | None,
@@ -18,6 +21,7 @@ def generate_home_view(
     user_exists: bool,
     enabled: bool,
 ) -> dict:
+    install_url = f"{env.domain}/slack/install?team_id={env.slack_team_id}"
     if not user_exists:
         return {
             "type": "home",
@@ -49,7 +53,7 @@ def generate_home_view(
                                 "emoji": True,
                             },
                             "style": "primary",
-                            "url": "https://slickstats.transcental.dev/slack/install",
+                            "url": install_url,
                             "action_id": "authorise-btn",
                         }
                     ],
@@ -529,7 +533,7 @@ def generate_home_view(
                             "emoji": True,
                         },
                         "style": "danger",
-                        "url": "https://slickstats.transcental.dev/slack/install",
+                        "url": install_url,
                         "action_id": "authorise-btn",
                     }
                 ],

@@ -29,6 +29,7 @@ class Environment:
         self.slack_client_secret = os.environ.get("SLACK_CLIENT_SECRET", "unset")
         self.slack_signing_secret = os.environ.get("SLACK_SIGNING_SECRET", "unset")
         self.slack_token = os.environ.get("SLACK_TOKEN", "unset")
+        self.slack_team_id = os.environ.get("SLACK_TEAM_ID", "unset")
 
         self.slack_heartbeat_channel = os.environ.get(
             "SLACK_HEARTBEAT_CHANNEL", "unset"
@@ -36,6 +37,7 @@ class Environment:
         self.slack_log_channel = os.environ.get("SLACK_LOG_CHANNEL", "unset")
         self.slack_webhook_url = os.environ.get("SLACK_WEBHOOK_URL", "unset")
 
+        self.domain = os.environ.get("DOMAIN", "unset")
         self.mongo_uri = os.environ.get("MONGO_URI", "unset")
 
         self.environment = os.environ.get("ENV", "development")

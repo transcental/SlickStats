@@ -24,81 +24,26 @@ Make sure to install the pre-commit hooks by running `pre-commit install` after 
 
 ### Setup
 
-Create a Slack app from the [dashboard](https://api.slack.com/apps) with the following manifest (make sure to switch out the URL to yours)
+**The person installing this for the first time must be a workspace admin/owner**
 
-```json
-{
-    "display_information": {
-        "name": "Slick Stats Dev",
-        "description": "Development version of @Slick Stats",
-        "background_color": "#2b592a",
-        "long_description": "Woah, hey I'm the dev version of @Slick Stats. I really don't think you should mess around with me, it could break your @Slick Stats experience which you really don't want do you?"
-    },
-    "features": {
-        "app_home": {
-            "home_tab_enabled": true,
-            "messages_tab_enabled": true,
-            "messages_tab_read_only_enabled": false
-        },
-        "bot_user": {
-            "display_name": "Slick Stats Dev",
-            "always_online": true
-        }
-    },
-    "oauth_config": {
-        "redirect_urls": [
-            "https://URL/slack/oauth_redirect"
-        ],
-        "scopes": {
-            "user": [
-                "users.profile:read",
-                "users.profile:write",
-                "users:read"
-            ],
-            "bot": [
-                "chat:write",
-                "chat:write.public",
-                "commands",
-                "emoji:read",
-                "im:history",
-                "team:read",
-                "users.profile:read",
-                "users:read",
-                "chat:write.customize"
-            ]
-        }
-    },
-    "settings": {
-        "event_subscriptions": {
-            "request_url": "URL/slack/events",
-            "bot_events": [
-                "app_home_opened",
-                "message.im",
-                "user_huddle_changed"
-            ]
-        },
-        "interactivity": {
-            "is_enabled": true,
-            "request_url": "URL/slack/events",
-            "message_menu_options_url": "URL/slack/events"
-        },
-        "org_deploy_enabled": false,
-        "socket_mode_enabled": false,
-        "token_rotation_enabled": false
-    }
-}
-```
+Create a Slack app from the [dashboard](https://api.slack.com/apps) with the manifest from the [manifest.json](manifest.json) file. Change out the request URL to your server's URL (e.g. `https://your-url.tld/slack/events`).
 
-After cloning the repo, you will need to add a `.env` file with the following variables. You can get copy `.env.example` and fill in the values.
+
+After cloning the repo, you will need to add the environment variables. Use the `.env.example` file as a template and create a `.env` file in the root of the project. The following environment variables are required:
 
 - Required
+  - `SLACK_CLIENT_ID` - The client ID for your Slack app
   - `SLACK_CLIENT_SECRET` - The client secret for your Slack app
+  - `SLACK_TOKEN` - The bot token for your Slack app (xoxb)
+  - `SLACK_TEAM_ID` - The team ID for your Slack workspace (find this using `/sdt whoami`)
   - `SLACK_SIGNING_SECRET` - The signing secret for your Slack app
   - `SLACK_LOG_CHANNEL` - The ID of the channel to log all status changes to
   - `MONGO_URI` - The URI to your MongoDB database (e.g. `mongodb://admin:password@localhost:27017/?retryWrites=true&w=majority&appName=SlickStats`)
+  - `DOMAIN` - The domain of your server (e.g. `https://your-url.tld`). Do not include a trailing slash.
 - Optional
   - `ENV` - Should be set to `development` or `production`. Defaults to `development`
   - `PORT` - The port to run the Starlette server on. Defaults to `3000`
+  - `SLACK_HEARTBEAT_CHANNEL` - Extra channel to send debug messages to. Only use if you need it or are dev-ing
 
 ```sh
 python3.12 -m venv .venv
@@ -107,8 +52,9 @@ python3.12 -m pip install -r requirements.txt
 python3.12 app.py
 ```
 
-To install the app, visit your `https://YOUR-URL.TLD/slack/install` and add the app to your workspace.
+To install the app for the first time, visit your `https://YOUR-URL.TLD/slack/install?team_id=TEAM_ID` and add the app to your workspace.
 
+Need help? Send me a message on the Hack Club Slack, open an issue here, shoot me an email at amber (at) transcental (dot) dev or get in contact with me anywhere else you can find me!
 
 ## License
 All code in this repository is licensed under the GNU Affero General Public License v3.0, unless otherwise specified. See the [LICENSE](LICENSE.md) file for more information.
