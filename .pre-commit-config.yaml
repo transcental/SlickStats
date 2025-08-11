@@ -1,11 +1,11 @@
 repos:
   - repo: https://github.com/asottile/reorder-python-imports
-    rev: v3.14.0
+    rev: v3.15.0
     hooks:
     -   id: reorder-python-imports
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.9.6
+    rev: v0.12.8
     hooks:
       - id: ruff
         args: [ --fix ]
