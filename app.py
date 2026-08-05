@@ -137,7 +137,7 @@ async def toggle_enabled(ack: AsyncAck, body):
     )
     await app.client.views_publish(
         user_id=body["user"]["id"], token=installation.bot_token, view=get_home(user)
-    )    
+    )
 
 
 @app.options("emojis")
