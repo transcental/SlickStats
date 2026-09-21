@@ -8,13 +8,9 @@ from slack_bolt.async_app import AsyncAck
 from slack_sdk.web.async_client import AsyncWebClient
 from starlette.applications import Starlette
 
-from utils.db import get_user_settings
-from utils.db import update_user_settings
+from utils.db import get_user_settings, update_user_settings
 from utils.env import env
-from utils.slack import app
-from utils.slack import check_token
-from utils.slack import update_slack_pfp
-from utils.slack import update_slack_status
+from utils.slack import app, check_token, update_slack_pfp, update_slack_status
 from utils.update import run_updater
 from utils.views import generate_home_view
 
@@ -68,7 +64,6 @@ async def update_home_tab(client: AsyncWebClient, event, logger):
 async def authorise_btn(ack: AsyncAck):
     """This only needs to exist to acknowledge the button press"""
     await ack()
-    return
 
 
 @app.action("submit_settings")
@@ -260,13 +255,15 @@ async def app_uninstalled(event, ack: AsyncAck):
     """The app has been uninstalled from the workspace, send a status update"""
     await ack()
 
-    async with aiohttp.ClientSession() as session:
-        async with session.post(
+    async with (
+        aiohttp.ClientSession() as session,
+        session.post(
             env.slack_webhook_url,
             json={"status": "down", "reason": "App uninstalled", "hash": env.git_hash},
-        ):
-            logging.error(f"User {event['user']['id']} uninstalled the app")
-            exit()
+        ),
+    ):
+        logging.error(f"User {event['user']['id']} uninstalled the app")
+        exit()
 
 
 @contextlib.asynccontextmanager
@@ -279,14 +276,16 @@ async def main(_app: Starlette):
 
     logging.info(f"Starting Uvicorn app on port {env.port}")
 
-    async with aiohttp.ClientSession() as session:
-        async with session.post(
+    async with (
+        aiohttp.ClientSession() as session,
+        session.post(
             env.slack_webhook_url,
             json={"status": "up", "reason": "App started", "hash": env.git_hash},
-        ) as resp:
-            if resp.status != 200:
-                logging.error(f"Failed to send status update: {resp.status}")
-            logging.info("Connected to Slack API")
+        ) as resp,
+    ):
+        if resp.status != 200:
+            logging.error(f"Failed to send status update: {resp.status}")
+        logging.info("Connected to Slack API")
 
     yield
     logging.info("Closing Socket Mode handler")
