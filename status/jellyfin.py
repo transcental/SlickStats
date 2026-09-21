@@ -81,7 +81,7 @@ async def get_jellyfin_status(user: dict) -> tuple[str | None, str | None]:
         )
         external_urls = res.get("NowPlayingItem", {}).get("ExternalUrls", [])
         imdb = next(
-            (url.get("Url") for url in external_urls if url.get("Name") == "IMDb")
+            url.get("Url") for url in external_urls if url.get("Name") == "IMDb"
         )
         if imdb:
             dynamic_msg = (
