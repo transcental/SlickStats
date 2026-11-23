@@ -1,5 +1,3 @@
-from typing import Optional
-
 from motor.motor_asyncio import AsyncIOMotorClient
 from slack_sdk.oauth.installation_store.async_installation_store import (
     AsyncInstallationStore,
@@ -59,10 +57,10 @@ class MongoDBInstallationStore(AsyncInstallationStore):
     async def async_find_bot(
         self,
         *,
-        enterprise_id: Optional[str] = None,
-        team_id: Optional[str] = None,
-        is_enterprise_install: Optional[bool] = False,
-    ) -> Optional[Bot]:
+        enterprise_id: str | None = None,
+        team_id: str | None = None,
+        is_enterprise_install: bool | None = False,
+    ) -> Bot | None:
         """Finds the bot data for a given team or enterprise ID
 
         Keyword arguments:
@@ -89,11 +87,11 @@ class MongoDBInstallationStore(AsyncInstallationStore):
     async def async_find_installation(
         self,
         *,
-        enterprise_id: Optional[str] = None,
-        team_id: Optional[str] = None,
-        user_id: Optional[str] = None,
-        is_enterprise_install: Optional[bool] = False,
-    ) -> Optional[Installation]:
+        enterprise_id: str | None = None,
+        team_id: str | None = None,
+        user_id: str | None = None,
+        is_enterprise_install: bool | None = False,
+    ) -> Installation | None:
         """Finds the installation data for a given team, enterprise or user ID
 
         Keyword arguments:
@@ -120,7 +118,7 @@ class MongoDBInstallationStore(AsyncInstallationStore):
         return None
 
     async def async_delete_bot(
-        self, *, enterprise_id: Optional[str] = None, team_id: Optional[str]
+        self, *, enterprise_id: str | None = None, team_id: str | None
     ):
         """Deletes the bot data for a given team or enterprise ID from the database
 
@@ -138,9 +136,9 @@ class MongoDBInstallationStore(AsyncInstallationStore):
     async def async_delete_installation(
         self,
         *,
-        enterprise_id: Optional[str] = None,
-        team_id: Optional[str] = None,
-        user_id: Optional[str] = None,
+        enterprise_id: str | None = None,
+        team_id: str | None = None,
+        user_id: str | None = None,
     ):
         """Deletes the installation data for a given team, enterprise or user ID from the database
 
@@ -163,7 +161,7 @@ class MongoDBInstallationStore(AsyncInstallationStore):
         await self.motor_client["slickstats"].users.delete_one({"user_id": user_id})
 
     async def async_find_installations(
-        self, *, enterprise_id: Optional[str] = None, team_id: Optional[str] = None
+        self, *, enterprise_id: str | None = None, team_id: str | None = None
     ) -> list[Installation]:
         """Finds all installation data for a given team or enterprise ID from the database
 
