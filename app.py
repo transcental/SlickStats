@@ -11,6 +11,7 @@ from starlette.applications import Starlette
 from utils.db import get_user_settings
 from utils.db import update_user_settings
 from utils.env import env
+from utils.lastfm_migration import send_migration_dms
 from utils.slack import app
 from utils.slack import check_token
 from utils.slack import update_slack_pfp
@@ -28,8 +29,9 @@ huddles_acknowledged = []
 def get_home(user_data: dict) -> dict:
     """Returns the home tab view with the user's settings"""
     return generate_home_view(
+        user_id=user_data.get("user_id", ""),
         lastfm_username=user_data.get("lastfm_username", None),
-        lastfm_api_key=user_data.get("lastfm_api_key", None),
+        lastfm_connected=bool(user_data.get("lastfm_session_key")),
         steam_id=user_data.get("steam_id", None),
         steam_api_key=user_data.get("steam_api_key", None),
         jellyfin_url=user_data.get("jellyfin_url", None),
@@ -76,8 +78,6 @@ async def submit_settings(ack: AsyncAck, body):
     """Saves the settings submitted by the user and updates the home tab view"""
     await ack()
     settings = [
-        "lastfm_username",
-        "lastfm_api_key",
         "steam_id",
         "steam_api_key",
         "jellyfin_url",
@@ -111,6 +111,42 @@ async def submit_settings(ack: AsyncAck, body):
         return
     await app.client.views_publish(
         user_id=body["user"]["id"], token=installation.bot_token, view=get_home(user)
+    )
+
+
+@app.action("lastfm_connect")
+async def lastfm_connect(ack: AsyncAck):
+    """The button opens Last.fm in the browser, it only needs acknowledging"""
+    await ack()
+
+
+@app.action("lastfm_disconnect")
+async def lastfm_disconnect(ack: AsyncAck, body):
+    """Forgets the user's Last.fm account and refreshes the home tab"""
+    await ack()
+    user_id = body["user"]["id"]
+    await update_user_settings(
+        user_id,
+        {
+            "lastfm_username": None,
+            "lastfm_session_key": None,
+            "lastfm_api_key": None,
+            "current_song": None,
+        },
+    )
+    await publish_home(user_id)
+
+
+async def publish_home(user_id: str):
+    """Re-renders the app home for a user with their saved settings"""
+    user = await get_user_settings(user_id=user_id)
+    if not user:
+        return
+    installation = await env.installation_store.async_find_installation(user_id=user_id)
+    if not installation:
+        return
+    await app.client.views_publish(
+        user_id=user_id, token=installation.bot_token, view=get_home(user)
     )
 
 
@@ -276,6 +312,7 @@ async def main(_app: Starlette):
     logging.info("Connected to MongoDB")
 
     asyncio.create_task(run_updater())
+    asyncio.create_task(send_migration_dms())
 
     logging.info(f"Starting Uvicorn app on port {env.port}")
 

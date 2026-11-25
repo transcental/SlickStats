@@ -1,3 +1,4 @@
+import logging
 import os
 
 from dotenv import load_dotenv
@@ -37,6 +38,12 @@ class Environment:
         self.slack_log_channel = os.environ.get("SLACK_LOG_CHANNEL", "unset")
         self.slack_webhook_url = os.environ.get("SLACK_WEBHOOK_URL", "unset")
 
+        # Last.fm API account ("OAuth app"). Owned by the person running the
+        # deployment; from 1 Dec 2026 that account needs Last.fm Pro. Optional:
+        # if either is empty, Last.fm support is switched off.
+        self.lastfm_api_key = os.environ.get("LASTFM_API_KEY", "")
+        self.lastfm_shared_secret = os.environ.get("LASTFM_SHARED_SECRET", "")
+
         self.domain = os.environ.get("DOMAIN", "unset")
         self.mongo_uri = os.environ.get("MONGO_URI", "unset")
 
@@ -52,6 +59,12 @@ class Environment:
         self.installation_store = MongoDBInstallationStore(self.motor_client)
 
         self.slack_client = AsyncWebClient(token=self.slack_token)
+
+        self.lastfm_enabled = bool(self.lastfm_api_key and self.lastfm_shared_secret)
+        if not self.lastfm_enabled:
+            logging.warning(
+                "LASTFM_API_KEY / LASTFM_SHARED_SECRET not set, Last.fm support is disabled"
+            )
 
         self.git_hash = get_git_hash()
 

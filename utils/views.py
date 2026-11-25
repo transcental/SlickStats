@@ -1,9 +1,70 @@
 from utils.env import env
+from utils.lastfm_auth import auth_url
+
+DONATE_URL = "https://monzo.me/amberbarnes02"
+
+
+def lastfm_blocks(
+    user_id: str, lastfm_username: str | None, lastfm_connected: bool
+) -> list[dict]:
+    """Returns the Last.fm section of the app home: connect or disconnect"""
+    if not env.lastfm_enabled:
+        return [
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "*Last.fm*\n_Last.fm isn't set up on this server yet._",
+                },
+            },
+            {"type": "divider"},
+        ]
+
+    connect_button = {
+        "type": "button",
+        "text": {"type": "plain_text", "text": "Connect Last.fm", "emoji": True},
+        "style": "primary",
+        "url": auth_url(user_id),
+        "action_id": "lastfm_connect",
+    }
+
+    if lastfm_connected and lastfm_username:
+        text = f"*Last.fm*\nConnected as <https://www.last.fm/user/{lastfm_username}|{lastfm_username}>"
+        accessory = {
+            "type": "button",
+            "text": {"type": "plain_text", "text": "Disconnect", "emoji": True},
+            "style": "danger",
+            "value": "lastfm_disconnect",
+            "action_id": "lastfm_disconnect",
+        }
+    elif lastfm_username:
+        # Set up with a personal API key before the switch to Last.fm sign in
+        text = (
+            f"*Last.fm*\nShowing what <https://www.last.fm/user/{lastfm_username}|{lastfm_username}> is listening to. "
+            "Please connect your Last.fm account: Last.fm turns off API keys for free accounts on 1 December."
+        )
+        accessory = connect_button
+    else:
+        text = (
+            "*Last.fm*\nConnect your Last.fm account to show what you're listening to."
+        )
+        accessory = connect_button
+
+    return [
+        {
+            "type": "section",
+            "block_id": "lastfm",
+            "text": {"type": "mrkdwn", "text": text},
+            "accessory": accessory,
+        },
+        {"type": "divider"},
+    ]
 
 
 def generate_home_view(
+    user_id: str,
     lastfm_username: str | None,
-    lastfm_api_key: str | None,
+    lastfm_connected: bool,
     steam_id: str | None,
     steam_api_key: str | None,
     jellyfin_url: str | None,
@@ -98,52 +159,11 @@ def generate_home_view(
                 "type": "header",
                 "text": {
                     "type": "plain_text",
-                    "text": "API Keys",
+                    "text": "Services",
                     "emoji": True,
                 },
             },
-            {
-                "type": "input",
-                "block_id": "lastfm_username",
-                "element": {
-                    "type": "plain_text_input",
-                    "action_id": "lastfm_username",
-                    "initial_value": lastfm_username if lastfm_username else "",
-                },
-                "label": {
-                    "type": "plain_text",
-                    "text": "Last.fm Username",
-                    "emoji": False,
-                },
-            },
-            {
-                "type": "context",
-                "elements": [{"type": "mrkdwn", "text": "_Your account username!_"}],
-            },
-            {
-                "type": "input",
-                "block_id": "lastfm_api_key",
-                "element": {
-                    "type": "plain_text_input",
-                    "action_id": "lastfm_api_key",
-                    "initial_value": lastfm_api_key if lastfm_api_key else "",
-                },
-                "label": {
-                    "type": "plain_text",
-                    "text": "Last.fm API Key",
-                    "emoji": False,
-                },
-            },
-            {
-                "type": "context",
-                "elements": [
-                    {
-                        "type": "mrkdwn",
-                        "text": "_Get this from <https://www.last.fm/api/account/create|here>_",
-                    }
-                ],
-            },
-            {"type": "divider"},
+            *lastfm_blocks(user_id, lastfm_username, lastfm_connected),
             {
                 "type": "input",
                 "block_id": "steam_id",
@@ -535,6 +555,15 @@ def generate_home_view(
                         "style": "danger",
                         "url": install_url,
                         "action_id": "authorise-btn",
+                    }
+                ],
+            },
+            {
+                "type": "context",
+                "elements": [
+                    {
+                        "type": "mrkdwn",
+                        "text": f"_Enjoying Slick Stats? You can chip in towards running costs <{DONATE_URL}|here>_ :sparkling_heart:",
                     }
                 ],
             },
