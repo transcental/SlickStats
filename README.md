@@ -41,6 +41,8 @@ After cloning the repo, you will need to add the environment variables. Use the 
   - `MONGO_URI` - The URI to your MongoDB database (e.g. `mongodb://admin:password@localhost:27017/?retryWrites=true&w=majority&appName=SlickStats`)
   - `DOMAIN` - The domain of your server (e.g. `https://your-url.tld`). Do not include a trailing slash.
 - Optional
+  - `LASTFM_API_KEY` - The API key of your Last.fm API account. Without it (and the shared secret) Last.fm support is switched off
+  - `LASTFM_SHARED_SECRET` - The shared secret of your Last.fm API account
   - `ENV` - Should be set to `development` or `production`. Defaults to `development`
   - `PORT` - The port to run the Starlette server on. Defaults to `3000`
   - `SLACK_HEARTBEAT_CHANNEL` - Extra channel to send debug messages to. Only use if you need it or are dev-ing
@@ -51,6 +53,15 @@ source .venv/bin/activate
 python3.12 -m pip install -r requirements.txt
 python3.12 app.py
 ```
+
+### Last.fm
+
+Users connect Last.fm by signing in on Last.fm itself, so they don't need their own API key. The server uses one Last.fm API account for everyone. From 1 December 2026, Last.fm only lets API keys belonging to a Last.fm Pro account work, so the account that owns this one needs Pro.
+
+1. Sign in to the Last.fm account that will own the key and go to [last.fm/api/account/create](https://www.last.fm/api/account/create)
+2. Fill in an application name (e.g. Slick Stats) and description, and set the Callback URL to `https://YOUR-URL.TLD/lastfm/callback` (your `DOMAIN` followed by `/lastfm/callback`)
+3. Copy the API key into `LASTFM_API_KEY` and the shared secret into `LASTFM_SHARED_SECRET`
+4. Restart the app. Each user then presses **Connect Last.fm** in the app home and allows access on Last.fm
 
 To install the app for the first time, visit your `https://YOUR-URL.TLD/slack/install?team_id=TEAM_ID` and add the app to your workspace.
 

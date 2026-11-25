@@ -3,26 +3,31 @@ import logging
 import aiohttp
 
 from utils.db import update_user_settings
+from utils.env import env
+from utils.lastfm_auth import API_URL
 
-BASE_URL = "http://ws.audioscrobbler.com/2.0/"
 
-
-async def get_playing(api_key: str, username: str) -> dict | None:
+async def get_playing(username: str) -> dict | None:
     """Returns a JSON response with the currently playing media from Last.fm
 
-    Keyword arguments:
+    Uses the app's own API key (LASTFM_API_KEY), so users don't need their own.
 
-    api_key -- API key for the last.fm API (e.g. 1234567890abcdef1234567890abcdef)
+    Keyword arguments:
 
     username -- Last.fm username (e.g. user123)
 
     If there's an error executing the request it returns None
     """
-    url = f"{BASE_URL}?method=user.getrecenttracks&api_key={api_key}&format=json&user={username}"
+    params = {
+        "method": "user.getrecenttracks",
+        "api_key": env.lastfm_api_key,
+        "user": username,
+        "format": "json",
+    }
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get(url) as res:
-                return await res.json()
+            async with session.get(API_URL, params=params) as res:
+                return await res.json(content_type=None)
     except Exception as e:
         logging.error(e)
         return None
@@ -35,14 +40,16 @@ async def get_lastfm_status(user: dict) -> tuple[str | None, str | None]:
 
     user -- A dictionary with the user's settings
     """
-    if not user:
+    if not user or not env.lastfm_enabled:
         return None, None
-    api_key = user.get("lastfm_api_key")
+    # Set when the user connects through Last.fm. Users from before the switch
+    # still have a username they typed in, which keeps working until they
+    # connect, since recent tracks are public.
     username = user.get("lastfm_username")
-    if not api_key or not username:
+    if not username:
         return None, None
 
-    playing = await get_playing(api_key, username)
+    playing = await get_playing(username)
     if not playing:
         await update_user_settings(user.get("user_id"), {"current_song": None})
         return None, None
