@@ -1,6 +1,8 @@
 from utils.env import env
 from utils.lastfm_auth import auth_url
 
+DONATE_URL = "https://monzo.me/amberbarnes02"
+
 
 def lastfm_blocks(
     user_id: str, lastfm_username: str | None, lastfm_connected: bool
@@ -36,10 +38,10 @@ def lastfm_blocks(
             "action_id": "lastfm_disconnect",
         }
     elif lastfm_username:
-        # Username typed in before the switch to Last.fm sign in
+        # Set up with a personal API key before the switch to Last.fm sign in
         text = (
             f"*Last.fm*\nShowing what <https://www.last.fm/user/{lastfm_username}|{lastfm_username}> is listening to. "
-            "Connect your Last.fm account to confirm it's yours."
+            "Please connect your Last.fm account: Last.fm turns off API keys for free accounts on 1 December."
         )
         accessory = connect_button
     else:
@@ -553,6 +555,15 @@ def generate_home_view(
                         "style": "danger",
                         "url": install_url,
                         "action_id": "authorise-btn",
+                    }
+                ],
+            },
+            {
+                "type": "context",
+                "elements": [
+                    {
+                        "type": "mrkdwn",
+                        "text": f"_Enjoying Slick Stats? You can chip in towards running costs <{DONATE_URL}|here>_ :sparkling_heart:",
                     }
                 ],
             },

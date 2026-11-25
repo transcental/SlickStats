@@ -17,6 +17,10 @@ Services coming soon:
 - ListenBrainz
 - Nintendo Switch
 
+## Supporting
+
+Slick Stats is free to use. If you'd like to chip in towards running costs (including the Last.fm Pro subscription its API key now needs), you can [donate here](https://monzo.me/amberbarnes02).
+
 ## Contributing
 Contributions are welcome! If you're working on a feature, please open an issue first and say you're working on it. If you're having trouble, you can [message me on Slack](https://hackclub.slack.com/app_redirect?channel="U054VC2KM9P") or open an issue.
 
@@ -62,6 +66,8 @@ Users connect Last.fm by signing in on Last.fm itself, so they don't need their 
 2. Fill in an application name (e.g. Slick Stats) and description, and set the Callback URL to `https://YOUR-URL.TLD/lastfm/callback` (your `DOMAIN` followed by `/lastfm/callback`)
 3. Copy the API key into `LASTFM_API_KEY` and the shared secret into `LASTFM_SHARED_SECRET`
 4. Restart the app. Each user then presses **Connect Last.fm** in the app home and allows access on Last.fm
+
+Users who set up Last.fm with their own API key before this change keep using that key until they connect, and get a one-time DM asking them to connect. Connecting deletes their old key.
 
 To install the app for the first time, visit your `https://YOUR-URL.TLD/slack/install?team_id=TEAM_ID` and add the app to your workspace.
 

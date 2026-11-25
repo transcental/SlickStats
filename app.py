@@ -11,6 +11,7 @@ from starlette.applications import Starlette
 from utils.db import get_user_settings
 from utils.db import update_user_settings
 from utils.env import env
+from utils.lastfm_migration import send_migration_dms
 from utils.slack import app
 from utils.slack import check_token
 from utils.slack import update_slack_pfp
@@ -311,6 +312,7 @@ async def main(_app: Starlette):
     logging.info("Connected to MongoDB")
 
     asyncio.create_task(run_updater())
+    asyncio.create_task(send_migration_dms())
 
     logging.info(f"Starting Uvicorn app on port {env.port}")
 

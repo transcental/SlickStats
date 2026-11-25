@@ -7,20 +7,20 @@ from utils.env import env
 from utils.lastfm_auth import API_URL
 
 
-async def get_playing(username: str) -> dict | None:
+async def get_playing(username: str, api_key: str) -> dict | None:
     """Returns a JSON response with the currently playing media from Last.fm
-
-    Uses the app's own API key (LASTFM_API_KEY), so users don't need their own.
 
     Keyword arguments:
 
     username -- Last.fm username (e.g. user123)
 
+    api_key -- Last.fm API key to use: the app's own, or a user's legacy key
+
     If there's an error executing the request it returns None
     """
     params = {
         "method": "user.getrecenttracks",
-        "api_key": env.lastfm_api_key,
+        "api_key": api_key,
         "user": username,
         "format": "json",
     }
@@ -40,16 +40,21 @@ async def get_lastfm_status(user: dict) -> tuple[str | None, str | None]:
 
     user -- A dictionary with the user's settings
     """
-    if not user or not env.lastfm_enabled:
+    if not user:
         return None, None
-    # Set when the user connects through Last.fm. Users from before the switch
-    # still have a username they typed in, which keeps working until they
-    # connect, since recent tracks are public.
     username = user.get("lastfm_username")
-    if not username:
+    # Both systems run side by side for now: users who haven't connected yet
+    # keep using the API key they typed in. Connecting deletes that key, and
+    # from then on the app's own key is used.
+    legacy_key = user.get("lastfm_api_key")
+    if user.get("lastfm_session_key") or not legacy_key:
+        api_key = env.lastfm_api_key if env.lastfm_enabled else None
+    else:
+        api_key = legacy_key
+    if not username or not api_key:
         return None, None
 
-    playing = await get_playing(username)
+    playing = await get_playing(username, api_key)
     if not playing:
         await update_user_settings(user.get("user_id"), {"current_song": None})
         return None, None

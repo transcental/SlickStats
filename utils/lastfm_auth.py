@@ -22,8 +22,10 @@ API_URL = "https://ws.audioscrobbler.com/2.0/"
 AUTH_URL = "https://www.last.fm/api/auth/"
 CALLBACK_PATH = "/lastfm/callback"
 
-# How long a "Connect Last.fm" link in the app home stays valid
+# How long a "Connect Last.fm" link stays valid: links in the app home are
+# regenerated every time it opens, links sent by DM need to last longer
 STATE_MAX_AGE = 60 * 60 * 24
+DM_STATE_MAX_AGE = 60 * 60 * 24 * 30
 
 
 def sign(params: dict) -> str:
@@ -50,22 +52,22 @@ def _state_mac(payload: str) -> str:
     ).hexdigest()[:32]
 
 
-def make_state(user_id: str) -> str:
+def make_state(user_id: str, max_age: int = STATE_MAX_AGE) -> str:
     """Returns a signed, URL-safe state tying a callback to a Slack user"""
-    payload = f"{user_id}.{int(time.time())}"
+    payload = f"{user_id}.{int(time.time()) + max_age}"
     return f"{payload}.{_state_mac(payload)}"
 
 
 def read_state(state: str) -> str | None:
     """Returns the Slack user ID from a state, or None if it's forged or expired"""
     try:
-        user_id, issued, mac = state.split(".")
-        issued_at = int(issued)
+        user_id, expires, mac = state.split(".")
+        expires_at = int(expires)
     except ValueError:
         return None
-    if not hmac.compare_digest(mac, _state_mac(f"{user_id}.{issued}")):
+    if not hmac.compare_digest(mac, _state_mac(f"{user_id}.{expires}")):
         return None
-    if time.time() - issued_at > STATE_MAX_AGE:
+    if time.time() > expires_at:
         return None
     return user_id
 
@@ -76,10 +78,13 @@ def callback_url(state: str) -> str:
     return f"{env.domain}{CALLBACK_PATH}/{state}"
 
 
-def auth_url(user_id: str) -> str:
+def auth_url(user_id: str, max_age: int = STATE_MAX_AGE) -> str:
     """Returns the Last.fm URL a Slack user visits to connect their account"""
     query = urlencode(
-        {"api_key": env.lastfm_api_key, "cb": callback_url(make_state(user_id))}
+        {
+            "api_key": env.lastfm_api_key,
+            "cb": callback_url(make_state(user_id, max_age)),
+        }
     )
     return f"{AUTH_URL}?{query}"
 
